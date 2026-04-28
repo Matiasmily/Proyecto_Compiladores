@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analizador Léxico – Reglas de Crédito</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+
+  <!-- Encabezado -->
+  <div class="header">
+    <h1>Analizador <em>Léxico</em></h1>
+    <p>Lenguaje de Reglas de Evaluación de Crédito</p>
+  </div>
+
+  <!-- Tarjetas de estadísticas -->
+  <div class="stats-cards">
+    <div class="stat-card sc-kw">
+      <span class="stat-card-badge">KW</span>
+      <span class="stat-card-count" id="sc-kw">0</span>
+      <span class="stat-card-label">Reservadas</span>
+    </div>
+    <div class="stat-card sc-td">
+      <span class="stat-card-badge">TD</span>
+      <span class="stat-card-count" id="sc-td">0</span>
+      <span class="stat-card-label">Tipos Dato</span>
+    </div>
+    <div class="stat-card sc-id">
+      <span class="stat-card-badge">ID</span>
+      <span class="stat-card-count" id="sc-id">0</span>
+      <span class="stat-card-label">Identificadores</span>
+    </div>
+    <div class="stat-card sc-op">
+      <span class="stat-card-badge">OP</span>
+      <span class="stat-card-count" id="sc-op">0</span>
+      <span class="stat-card-label">Operadores</span>
+    </div>
+    <div class="stat-card sc-num">
+      <span class="stat-card-badge">NUM</span>
+      <span class="stat-card-count" id="sc-num">0</span>
+      <span class="stat-card-label">Números</span>
+    </div>
+    <div class="stat-card sc-str">
+      <span class="stat-card-badge">STR</span>
+      <span class="stat-card-count" id="sc-str">0</span>
+      <span class="stat-card-label">Textos</span>
+    </div>
+    <div class="stat-card sc-sym">
+      <span class="stat-card-badge">SYM</span>
+      <span class="stat-card-count" id="sc-sym">0</span>
+      <span class="stat-card-label">Símbolos</span>
+    </div>
+    <div class="stat-card sc-err">
+      <span class="stat-card-badge">ERR</span>
+      <span class="stat-card-count" id="sc-err">0</span>
+      <span class="stat-card-label">Errores</span>
+    </div>
+  </div>
+
+  <!-- Fila superior: Editor + Highlight -->
+  <div class="main-grid">
+
+    <!-- Panel editor -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot" style="background:#ff5555"></div>
+        <div class="dot" style="background:#ffb86c"></div>
+        <div class="dot" style="background:#50fa7b"></div>
+        <span class="panel-title" style="margin-left:0.4rem">código fuente</span>
+      </div>
+      <div class="editor-wrap">
+        <div class="line-numbers" id="line-nums">1</div>
+        <textarea id="editor"
+          placeholder="CAMPO entero ingreso ;&#10;CAMPO texto historial_crediticio ;&#10;&#10;SI ingreso >= 5000 Y edad >= 21 ENTONCES APROBAR ;"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="analizar()">▶ Analizar</button>
+        <button class="btn btn-ghost"   onclick="limpiar()">↺ Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Panel syntax highlight -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">código resaltado</span>
+        <span class="panel-title-right">pasa el cursor sobre un token para ver su tipo</span>
+      </div>
+      <div class="editor-wrap">
+        <div class="line-numbers" id="hl-lines"></div>
+        <div class="highlight-wrap" id="highlight">
+          <div class="empty-highlight">
+            <div class="empty-icon">✦</div>
+            <span>El código resaltado aparecerá aquí</span>
+          </div>
+        </div>
+      </div>
+      <div class="status-bar">
+        <span id="status-msg"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tabla de tokens -->
+  <div class="panel" style="animation: fadeUp 0.5s 0.3s ease both; margin-top: 1.5rem;">
+    <div class="panel-header">
+      <span class="panel-title">fase 1 — tabla de tokens</span>
+    </div>
+    <div class="table-wrap" id="table-wrap" style="min-height:260px; max-height:380px;">
+      <div class="empty">
+        <div class="empty-icon">⌨</div>
+        <span>Escribe código y presiona Analizar</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 2: Análisis Sintáctico -->
+  <div class="panel" style="animation: fadeUp 0.5s 0.4s ease both; margin-top: 1.5rem;">
+    <div class="panel-header">
+      <span class="panel-title">fase 2 — análisis sintáctico</span>
+    </div>
+    <div style="padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border);">
+      <div id="sint-resultado">
+        <div class="empty" style="min-height: 60px;">
+          <span>El resultado del análisis sintáctico aparecerá aquí</span>
+        </div>
+      </div>
+    </div>
+    <!-- Árbol sintáctico -->
+    <div id="arbol-wrap" style="display:none;">
+      <div class="panel-header">
+        <span class="panel-title">árbol sintáctico</span>
+      </div>
+      <div style="padding: 1.2rem 1.4rem; overflow-x: auto;">
+        <pre id="arbol-pre" class="arbol-pre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 3: Análisis Semántico -->
+  <div class="panel" style="animation: fadeUp 0.5s 0.5s ease both; margin-top: 1.5rem;">
+    <div class="panel-header">
+      <span class="panel-title">fase 3 — análisis semántico</span>
+    </div>
+
+    <!-- Resultado del análisis semántico -->
+    <div style="padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border);">
+      <div id="sem-resultado">
+        <div class="empty" style="min-height: 60px;">
+          <span>El resultado del análisis semántico aparecerá aquí</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de símbolos: solo si no hay errores -->
+    <div id="tabla-simbolos-wrap" style="display:none;">
+      <div class="panel-header">
+        <span class="panel-title">tabla de símbolos</span>
+        <span class="panel-title-right">construida automáticamente durante el análisis</span>
+      </div>
+      <div class="table-wrap" style="min-height: auto; max-height: 320px;">
+        <table class="token-table" id="tabla-simbolos"></table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script src="analizador.js"></script>
+</body>
+</html>
