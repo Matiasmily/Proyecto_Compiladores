@@ -7,59 +7,147 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- ══════════════════════════════════════════════════
+     MODAL DE ONBOARDING (aparece solo la primera vez)
+══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-onboarding">
+  <div class="modal">
+    <div class="modal-badge">👋 Bienvenido</div>
+    <h2 class="modal-title">¿Cómo funciona este analizador?</h2>
+    <p class="modal-desc">Este compilador analiza un lenguaje especializado para definir reglas de evaluación de crédito. Sigue estos 3 pasos:</p>
+
+    <div class="onboarding-steps">
+      <div class="ob-step">
+        <div class="ob-step-num">1</div>
+        <div class="ob-step-body">
+          <strong>Declara los campos</strong>
+          <p>Define qué datos usarás y de qué tipo son: <code>entero</code> o <code>texto</code>.</p>
+          <code class="ob-code">CAMPO entero ingreso ;</code>
+        </div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-step-num">2</div>
+        <div class="ob-step-body">
+          <strong>Escribe las reglas</strong>
+          <p>Cada regla evalúa condiciones y define una acción: <code>APROBAR</code>, <code>RECHAZAR</code> o <code>CONDICIONAR</code>.</p>
+          <code class="ob-code">SI ingreso >= 5000 ENTONCES APROBAR ;</code>
+        </div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-step-num">3</div>
+        <div class="ob-step-body">
+          <strong>Presiona Analizar</strong>
+          <p>El sistema ejecutará las tres fases: léxica, sintáctica y semántica, mostrando resultados en tiempo real.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btn-cargar-ejemplo-modal" onclick="cargarEjemploDesdeModal()">
+        ✦ Cargar ejemplo y empezar
+      </button>
+      <button class="btn btn-ghost" onclick="cerrarModal()">
+        Empezar desde cero
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
 
   <!-- Encabezado -->
   <div class="header">
-    <h1>Analizador <em>Léxico</em></h1>
-    <p>Lenguaje de Reglas de Evaluación de Crédito</p>
+    <h1>Lenguaje de <em>Reglas de Crédito</em></h1>
   </div>
 
-  <!-- Tarjetas de estadísticas -->
-  <div class="stats-cards">
-    <div class="stat-card sc-kw">
-      <span class="stat-card-badge">KW</span>
-      <span class="stat-card-count" id="sc-kw">0</span>
-      <span class="stat-card-label">Reservadas</span>
+  <!-- ══ EJEMPLOS RÁPIDOS ══ -->
+  <div class="ejemplos-bar" id="ejemplos-bar">
+    <span class="ejemplos-label">Ejemplos rápidos:</span>
+    <button class="ej-btn" onclick="cargarEjemplo('basico')">✓ Aprobación básica</button>
+    <button class="ej-btn" onclick="cargarEjemplo('compuesto')">⊕ Condiciones compuestas</button>
+    <button class="ej-btn" onclick="cargarEjemplo('texto')">✎ Campos de texto</button>
+    <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_semantico')">⚠ Error semántico</button>
+    <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_lexico')">⚠ Error léxico</button>
+    <button class="ej-btn-help" onclick="toggleReferencia()" id="btn-ref" title="Referencia rápida del lenguaje">
+      ? Referencia
+    </button>
+  </div>
+
+  <!-- ══ PANEL DE REFERENCIA RÁPIDA (colapsable) ══ -->
+  <div class="referencia-panel" id="referencia-panel" style="display:none;">
+    <div class="ref-header">
+      <span class="ref-title">📖 Referencia rápida del lenguaje</span>
+      <button class="ref-close" onclick="toggleReferencia()">✕</button>
     </div>
-    <div class="stat-card sc-td">
-      <span class="stat-card-badge">TD</span>
-      <span class="stat-card-count" id="sc-td">0</span>
-      <span class="stat-card-label">Tipos Dato</span>
-    </div>
-    <div class="stat-card sc-id">
-      <span class="stat-card-badge">ID</span>
-      <span class="stat-card-count" id="sc-id">0</span>
-      <span class="stat-card-label">Identificadores</span>
-    </div>
-    <div class="stat-card sc-op">
-      <span class="stat-card-badge">OP</span>
-      <span class="stat-card-count" id="sc-op">0</span>
-      <span class="stat-card-label">Operadores</span>
-    </div>
-    <div class="stat-card sc-num">
-      <span class="stat-card-badge">NUM</span>
-      <span class="stat-card-count" id="sc-num">0</span>
-      <span class="stat-card-label">Números</span>
-    </div>
-    <div class="stat-card sc-str">
-      <span class="stat-card-badge">STR</span>
-      <span class="stat-card-count" id="sc-str">0</span>
-      <span class="stat-card-label">Textos</span>
-    </div>
-    <div class="stat-card sc-sym">
-      <span class="stat-card-badge">SYM</span>
-      <span class="stat-card-count" id="sc-sym">0</span>
-      <span class="stat-card-label">Símbolos</span>
-    </div>
-    <div class="stat-card sc-err">
-      <span class="stat-card-badge">ERR</span>
-      <span class="stat-card-count" id="sc-err">0</span>
-      <span class="stat-card-label">Errores</span>
+    <div class="ref-body">
+      <div class="ref-col">
+        <h4>Estructura del programa</h4>
+        <pre class="ref-code">CAMPO [tipo] [nombre] ;
+CAMPO [tipo] [nombre] ;
+...
+SI [condición] ENTONCES [acción] ;
+SI [condición] ENTONCES [acción] ;
+...</pre>
+        <p class="ref-note">Primero <em>todas</em> las declaraciones, luego <em>todas</em> las reglas.</p>
+
+        <h4>Tipos de dato</h4>
+        <div class="ref-tokens">
+          <span class="tk tk-td">entero</span> Valores numéricos (ej: 5000)
+          <span class="tk tk-td">texto</span> Cadenas entre comillas (ej: "bueno")
+        </div>
+      </div>
+
+      <div class="ref-col">
+        <h4>Operadores de comparación</h4>
+        <div class="ref-tokens">
+          <span class="tk tk-op">&gt;=</span> Mayor o igual &nbsp;
+          <span class="tk tk-op">&lt;=</span> Menor o igual<br>
+          <span class="tk tk-op">&gt;</span> Mayor que &nbsp;
+          <span class="tk tk-op">&lt;</span> Menor que &nbsp;
+          <span class="tk tk-op">=</span> Igual a
+        </div>
+
+        <h4>Conectores lógicos</h4>
+        <div class="ref-tokens">
+          <span class="tk tk-kw">Y</span> Ambas condiciones deben cumplirse &nbsp;
+          <span class="tk tk-kw">O</span> Al menos una debe cumplirse &nbsp;
+          <span class="tk tk-kw">NO</span> Niega la condición siguiente
+        </div>
+
+        <h4>Acciones disponibles</h4>
+        <div class="ref-tokens">
+          <span class="tk tk-kw">APROBAR</span> Aprueba la solicitud &nbsp;
+          <span class="tk tk-kw">RECHAZAR</span> Rechaza la solicitud &nbsp;
+          <span class="tk tk-kw">CONDICIONAR</span> Aprobación con condiciones
+        </div>
+      </div>
+
+      <div class="ref-col">
+        <h4>Ejemplo completo</h4>
+        <pre class="ref-code ref-code-example">CAMPO entero ingreso ;
+CAMPO entero edad ;
+CAMPO texto historial ;
+
+SI ingreso >= 5000
+   Y edad >= 21
+   ENTONCES APROBAR ;
+
+SI historial = "malo"
+   ENTONCES RECHAZAR ;</pre>
+        <h4>Reglas importantes</h4>
+        <ul class="ref-rules">
+          <li>Todo campo debe declararse <strong>antes</strong> de usarse en una regla.</li>
+          <li>Cada sentencia termina con <strong>;</strong></li>
+          <li>Los campos <code>entero</code> solo se comparan con números.</li>
+          <li>Los campos <code>texto</code> solo se comparan con cadenas entre <code>" "</code>.</li>
+          <li>Los nombres de campo no pueden iniciar con un número.</li>
+        </ul>
+      </div>
     </div>
   </div>
 
-  <!-- Fila superior: Editor + Highlight -->
+  <!-- Fila superior: Editor + Sidebar stats + Highlight -->
   <div class="main-grid">
 
     <!-- Panel editor -->
@@ -69,6 +157,10 @@
         <div class="dot" style="background:#ffb86c"></div>
         <div class="dot" style="background:#50fa7b"></div>
         <span class="panel-title" style="margin-left:0.4rem">código fuente</span>
+        <!-- Ayuda inline -->
+        <div class="editor-hint" id="editor-hint">
+          <span class="hint-arrow">↓</span> empieza con <code>CAMPO entero nombre ;</code>
+        </div>
       </div>
       <div class="editor-wrap">
         <div class="line-numbers" id="line-nums">1</div>
@@ -78,6 +170,51 @@
       <div class="btn-row">
         <button class="btn btn-primary" onclick="analizar()">▶ Analizar</button>
         <button class="btn btn-ghost"   onclick="limpiar()">↺ Limpiar</button>
+        <button class="btn btn-ghost"   onclick="abrirModal()" style="margin-left:auto; font-size:0.78rem;">? Ayuda</button>
+      </div>
+    </div>
+
+    <!-- Sidebar de estadísticas -->
+    <div class="stats-sidebar">
+      <div class="stat-chip sc-kw">
+        <span class="stat-chip-badge">KW</span>
+        <span class="stat-chip-count" id="sc-kw">0</span>
+        <span class="stat-chip-label">Reserv.</span>
+      </div>
+      <div class="stat-chip sc-td">
+        <span class="stat-chip-badge">TD</span>
+        <span class="stat-chip-count" id="sc-td">0</span>
+        <span class="stat-chip-label">Tipos</span>
+      </div>
+      <div class="stat-chip sc-id">
+        <span class="stat-chip-badge">ID</span>
+        <span class="stat-chip-count" id="sc-id">0</span>
+        <span class="stat-chip-label">Ident.</span>
+      </div>
+      <div class="stat-chip sc-op">
+        <span class="stat-chip-badge">OP</span>
+        <span class="stat-chip-count" id="sc-op">0</span>
+        <span class="stat-chip-label">Oper.</span>
+      </div>
+      <div class="stat-chip sc-num">
+        <span class="stat-chip-badge">NUM</span>
+        <span class="stat-chip-count" id="sc-num">0</span>
+        <span class="stat-chip-label">Núm.</span>
+      </div>
+      <div class="stat-chip sc-str">
+        <span class="stat-chip-badge">STR</span>
+        <span class="stat-chip-count" id="sc-str">0</span>
+        <span class="stat-chip-label">Texto</span>
+      </div>
+      <div class="stat-chip sc-sym">
+        <span class="stat-chip-badge">SYM</span>
+        <span class="stat-chip-count" id="sc-sym">0</span>
+        <span class="stat-chip-label">Símb.</span>
+      </div>
+      <div class="stat-chip sc-err">
+        <span class="stat-chip-badge">ERR</span>
+        <span class="stat-chip-count" id="sc-err">0</span>
+        <span class="stat-chip-label">Err.</span>
       </div>
     </div>
 
@@ -128,7 +265,6 @@
         </div>
       </div>
     </div>
-    <!-- Árbol sintáctico -->
     <div id="arbol-wrap" style="display:none;">
       <div class="panel-header">
         <span class="panel-title">árbol sintáctico</span>
@@ -144,8 +280,6 @@
     <div class="panel-header">
       <span class="panel-title">fase 3 — análisis semántico</span>
     </div>
-
-    <!-- Resultado del análisis semántico -->
     <div style="padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border);">
       <div id="sem-resultado">
         <div class="empty" style="min-height: 60px;">
@@ -153,8 +287,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Tabla de símbolos: solo si no hay errores -->
     <div id="tabla-simbolos-wrap" style="display:none;">
       <div class="panel-header">
         <span class="panel-title">tabla de símbolos</span>
@@ -164,7 +296,6 @@
         <table class="token-table" id="tabla-simbolos"></table>
       </div>
     </div>
-
   </div>
 
 </div>
