@@ -83,54 +83,39 @@ SI 2campo <= 100 ENTONCES CONDICIONAR ;`
 };
 
 // ═══════════════════════════════════════════════════════
-//  MENSAJES DE ERROR MEJORADOS (sugerencias por patrón)
+//  SUGERENCIAS DE ERROR
 // ═══════════════════════════════════════════════════════
 
 function obtenerSugerencia(mensaje) {
   const m = mensaje.toLowerCase();
-
-  if (m.includes('tipo_dato') || m.includes('entero') && m.includes('texto'))
+  if (m.includes('tipo_dato') || (m.includes('entero') && m.includes('texto')))
     return '💡 Usa <code>entero</code> para números o <code>texto</code> para cadenas. Ej: <code>CAMPO entero ingreso ;</code>';
-
   if (m.includes('campo') && m.includes('inicio'))
     return '💡 El programa debe comenzar con al menos una declaración <code>CAMPO</code>. Ej: <code>CAMPO entero ingreso ;</code>';
-
   if (m.includes('si') && m.includes('inicio'))
     return '💡 Después de las declaraciones necesitas al menos una regla. Ej: <code>SI ingreso >= 1000 ENTONCES APROBAR ;</code>';
-
   if (m.includes('entonces'))
     return '💡 Después de la condición va la palabra <code>ENTONCES</code>. Ej: <code>SI ingreso >= 5000 ENTONCES APROBAR ;</code>';
-
   if (m.includes('aprobar') || m.includes('rechazar') || m.includes('condicionar'))
     return '💡 Las acciones válidas son: <code>APROBAR</code>, <code>RECHAZAR</code> o <code>CONDICIONAR</code>.';
-
   if (m.includes(';') || m.includes('punto_y_coma'))
     return '💡 Cada declaración y regla debe terminar con <code>;</code>';
-
   if (m.includes('operador'))
     return '💡 Los operadores disponibles son: <code>&gt;=</code> <code>&lt;=</code> <code>&gt;</code> <code>&lt;</code> <code>=</code>';
-
   if (m.includes('identificador') && m.includes('dígito'))
     return '💡 Los nombres de campo no pueden iniciar con un número. Usa letras o guión bajo: <code>campo1</code> ✓ — <code>1campo</code> ✗';
-
   if (m.includes('cadena sin cerrar'))
     return '💡 Cierra la cadena de texto con comillas dobles. Ej: <code>"bueno"</code>';
-
   if (m.includes('no fue declarado'))
     return '💡 Declara el campo antes de usarlo en una regla. Todos los <code>CAMPO</code> van al inicio del programa.';
-
   if (m.includes('fue declarado como entero') && m.includes('texto'))
     return '💡 Un campo <code>entero</code> solo puede compararse con números, no con cadenas entre comillas.';
-
   if (m.includes('fue declarado como texto') && m.includes('número'))
     return '💡 Un campo <code>texto</code> solo puede compararse con cadenas entre comillas. Ej: <code>= "valor"</code>';
-
   if (m.includes('ya fue declarado'))
     return '💡 Cada campo debe declararse una sola vez. Elimina la declaración duplicada.';
-
   if (m.includes('token inesperado'))
     return '💡 Puede haber un símbolo extra o falta un <code>;</code> en la línea anterior.';
-
   return null;
 }
 
@@ -141,15 +126,12 @@ function obtenerSugerencia(mensaje) {
 function tokenizar(codigo) {
   const tokens = [];
   const lineas = codigo.split('\n');
-
   for (let nl = 0; nl < lineas.length; nl++) {
     const linea = lineas[nl];
     let i = 0;
     const ln = nl + 1;
-
     while (i < linea.length) {
       if (/\s/.test(linea[i])) { i++; continue; }
-
       if (linea[i] === '"') {
         let j = i + 1;
         while (j < linea.length && linea[j] !== '"') j++;
@@ -162,22 +144,18 @@ function tokenizar(codigo) {
         }
         continue;
       }
-
       let opFound = null;
       for (const op of OPERADORES) {
         if (linea.startsWith(op, i)) { opFound = op; break; }
       }
       if (opFound) {
         tokens.push({ lexema: opFound, tipo: 'OPERADOR', sub: NOMBRE_OP[opFound], ln });
-        i += opFound.length;
-        continue;
+        i += opFound.length; continue;
       }
-
       if (SIMBOLOS.has(linea[i])) {
         tokens.push({ lexema: linea[i], tipo: 'SIMBOLO', sub: NOMBRE_SYM[linea[i]], ln });
         i++; continue;
       }
-
       if (/[0-9]/.test(linea[i])) {
         let j = i;
         while (j < linea.length && /[0-9]/.test(linea[j])) j++;
@@ -192,7 +170,6 @@ function tokenizar(codigo) {
         }
         continue;
       }
-
       if (/[a-zA-ZáéíóúÁÉÍÓÚñÑ_]/.test(linea[i])) {
         let j = i;
         while (j < linea.length && /[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9_]/.test(linea[j])) j++;
@@ -205,7 +182,6 @@ function tokenizar(codigo) {
           tokens.push({ lexema: lex, tipo: 'IDENTIFICADOR', ln });
         i = j; continue;
       }
-
       tokens.push({ lexema: linea[i], tipo: 'ERROR_LEXICO', ln, det: 'símbolo no reconocido' });
       i++;
     }
@@ -236,19 +212,12 @@ function buildHighlight(codigo, tokens) {
     if (!porLinea[t.ln]) porLinea[t.ln] = [];
     porLinea[t.ln].push(t);
   });
-
   return lineas.map((linea, idx) => {
     const ln = idx + 1;
     const lineTokens = porLinea[ln] || [];
     const hasErr = lineTokens.some(t => t.tipo === 'ERROR_LEXICO');
-
-    if (!lineTokens.length) {
-      return `<span class="hl-line">${esc(linea) || ' '}</span>`;
-    }
-
-    let result = '';
-    let pos = 0;
-
+    if (!lineTokens.length) return `<span class="hl-line">${esc(linea) || ' '}</span>`;
+    let result = '', pos = 0;
     lineTokens.forEach(t => {
       const idx2 = linea.indexOf(t.lexema, pos);
       if (idx2 === -1) return;
@@ -256,9 +225,7 @@ function buildHighlight(codigo, tokens) {
       result += `<span class="${HL_CLASE[t.tipo]}" title="${t.tipo}${t.det ? ' — ' + t.det : ''}">${esc(t.lexema)}</span>`;
       pos = idx2 + t.lexema.length;
     });
-
     if (pos < linea.length) result += esc(linea.slice(pos));
-
     return `<span class="hl-line${hasErr ? ' has-error' : ''}">${result || ' '}</span>`;
   }).join('\n');
 }
@@ -269,7 +236,6 @@ function buildHighlight(codigo, tokens) {
 
 function renderLexico(tokens, codigo) {
   const errCount = cnt(tokens, 'ERROR_LEXICO');
-
   const counts = {
     PALABRA_RESERVADA: cnt(tokens, 'PALABRA_RESERVADA'),
     TIPO_DATO:         cnt(tokens, 'TIPO_DATO'),
@@ -281,90 +247,68 @@ function renderLexico(tokens, codigo) {
     ERROR_LEXICO:      errCount
   };
   ['kw','td','id','op','num','str','sym','err'].forEach((k, i) => {
-    const tipo = Object.keys(counts)[i];
-    document.getElementById('sc-' + k).textContent = counts[tipo];
+    document.getElementById('sc-' + k).textContent = counts[Object.keys(counts)[i]];
   });
-
   document.getElementById('highlight').innerHTML = buildHighlight(codigo, tokens);
-
   const lineCount = codigo.split('\n').length;
   document.getElementById('hl-lines').innerHTML =
     Array.from({length: lineCount}, (_, i) => i + 1).join('<br>');
-
   const tableWrap = document.getElementById('table-wrap');
   if (!tokens.length) {
     tableWrap.innerHTML = `<div class="empty"><div class="empty-icon">∅</div><span>Sin tokens encontrados</span></div>`;
   } else {
-    let html = `<table class="token-table">
-      <thead><tr>
-        <th class="col-n">#</th>
-        <th class="col-ln">Lín.</th>
-        <th>Lexema</th>
-        <th>Tipo de Token</th>
-      </tr></thead><tbody>`;
-
+    let html = `<table class="token-table"><thead><tr>
+      <th class="col-n">#</th><th class="col-ln">Lín.</th>
+      <th>Lexema</th><th>Tipo de Token</th>
+    </tr></thead><tbody>`;
     tokens.forEach((t, i) => {
       const sub = t.sub ? ` <span class="sub">(${esc(t.sub)})</span>` : '';
       const det = t.det ? ` <span class="sub">— ${esc(t.det)}</span>` : '';
       const rowClass = t.tipo === 'ERROR_LEXICO' ? ' class="row-err"' : '';
       html += `<tr${rowClass} style="animation-delay:${i * 0.018}s">
-        <td class="col-n">${i + 1}</td>
-        <td class="col-ln">${t.ln}</td>
+        <td class="col-n">${i+1}</td><td class="col-ln">${t.ln}</td>
         <td>${esc(t.lexema)}</td>
-        <td>
-          <span class="tk ${CLASE_TOKEN[t.tipo]}">${LABEL_BADGE[t.tipo]}</span>
-          <span class="sub">${esc(t.tipo)}</span>${sub}${det}
-        </td>
+        <td><span class="tk ${CLASE_TOKEN[t.tipo]}">${LABEL_BADGE[t.tipo]}</span>
+            <span class="sub">${esc(t.tipo)}</span>${sub}${det}</td>
       </tr>`;
     });
-
     html += '</tbody></table>';
     tableWrap.innerHTML = html;
   }
-
   const statusEl = document.getElementById('status-msg');
   if (errCount > 0) {
-    statusEl.innerHTML = `<span class="status-dot" style="background:var(--err)"></span><span class="status-err">${errCount} error${errCount > 1 ? 'es' : ''} léxico${errCount > 1 ? 's' : ''}</span> · ${tokens.length} tokens totales`;
+    statusEl.innerHTML = `<span class="status-dot" style="background:var(--err)"></span><span class="status-err">${errCount} error${errCount>1?'es':''} léxico${errCount>1?'s':''}</span> · ${tokens.length} tokens totales`;
   } else {
     statusEl.innerHTML = `<span class="status-dot" style="background:var(--id)"></span><span class="status-ok">Sin errores léxicos</span> · ${tokens.length} tokens totales`;
   }
 }
 
 // ═══════════════════════════════════════════════════════
-//  FASE 2 — ANALIZADOR SINTÁCTICO DESCENDENTE RECURSIVO
+//  FASE 2 — ANALIZADOR SINTÁCTICO
 // ═══════════════════════════════════════════════════════
 
 class AnalizadorSintactico {
   constructor(tokens) {
     this.tokens = tokens.filter(t => t.tipo !== 'ERROR_LEXICO');
-    this.pos    = 0;
+    this.pos = 0;
   }
-
   actual()  { return this.tokens[this.pos] || null; }
   fin()     { return this.pos >= this.tokens.length; }
-
-  esKw(lex) {
-    const t = this.actual();
-    return t && t.tipo === 'PALABRA_RESERVADA' && t.lexema.toUpperCase() === lex.toUpperCase();
-  }
+  esKw(lex) { const t = this.actual(); return t && t.tipo === 'PALABRA_RESERVADA' && t.lexema.toUpperCase() === lex.toUpperCase(); }
   esTipo()     { const t = this.actual(); return t && t.tipo === 'TIPO_DATO'; }
   esId()       { const t = this.actual(); return t && t.tipo === 'IDENTIFICADOR'; }
   esOp()       { const t = this.actual(); return t && t.tipo === 'OPERADOR'; }
   esValor()    { const t = this.actual(); return t && (t.tipo === 'NUMERO' || t.tipo === 'CADENA_TEXTO'); }
   esSimbolo(s) { const t = this.actual(); return t && t.tipo === 'SIMBOLO' && t.lexema === s; }
-
-  consumir() { return this.tokens[this.pos++]; }
-
+  consumir()   { return this.tokens[this.pos++]; }
   esperar(condFn, descripcion) {
     if (!condFn()) {
       const t = this.actual();
       const ln = t ? t.ln : '?';
-      const encontrado = t ? `"${t.lexema}" (${t.tipo})` : 'fin de programa';
-      throw new Error(`Línea ${ln}: se esperaba ${descripcion} pero se encontró ${encontrado}`);
+      throw new Error(`Línea ${ln}: se esperaba ${descripcion} pero se encontró ${t ? `"${t.lexema}" (${t.tipo})` : 'fin de programa'}`);
     }
     return this.consumir();
   }
-
   nodo(nombre, hijos = []) { return { nombre, hijos }; }
   hoja(token) { return { nombre: token.lexema, tipo: token.tipo, ln: token.ln, esHoja: true }; }
 
@@ -372,26 +316,15 @@ class AnalizadorSintactico {
     const n = this.nodo('PROGRAMA');
     n.hijos.push(this.parseDeclaraciones());
     n.hijos.push(this.parseReglas());
-    if (!this.fin()) {
-      const t = this.actual();
-      throw new Error(`Línea ${t.ln}: token inesperado "${t.lexema}" después del programa`);
-    }
+    if (!this.fin()) { const t = this.actual(); throw new Error(`Línea ${t.ln}: token inesperado "${t.lexema}" después del programa`); }
     return n;
   }
-
   parseDeclaraciones() {
     const n = this.nodo('DECLARACIONES');
-    if (!this.esKw('CAMPO')) {
-      const t = this.actual();
-      const ln = t ? t.ln : '?';
-      throw new Error(`Línea ${ln}: se esperaba CAMPO (inicio de declaración) pero se encontró "${t ? t.lexema : 'fin de programa'}"`);
-    }
-    while (this.esKw('CAMPO')) {
-      n.hijos.push(this.parseDeclaracion());
-    }
+    if (!this.esKw('CAMPO')) { const t = this.actual(); const ln = t?t.ln:'?'; throw new Error(`Línea ${ln}: se esperaba CAMPO (inicio de declaración) pero se encontró "${t?t.lexema:'fin de programa'}"`); }
+    while (this.esKw('CAMPO')) n.hijos.push(this.parseDeclaracion());
     return n;
   }
-
   parseDeclaracion() {
     const n = this.nodo('DECLARACION');
     n.hijos.push(this.hoja(this.esperar(() => this.esKw('CAMPO'), 'CAMPO')));
@@ -400,20 +333,12 @@ class AnalizadorSintactico {
     n.hijos.push(this.hoja(this.esperar(() => this.esSimbolo(';'), ';')));
     return n;
   }
-
   parseReglas() {
     const n = this.nodo('REGLAS');
-    if (!this.esKw('SI')) {
-      const t = this.actual();
-      const ln = t ? t.ln : '?';
-      throw new Error(`Línea ${ln}: se esperaba SI (inicio de regla) pero se encontró "${t ? t.lexema : 'fin de programa'}"`);
-    }
-    while (this.esKw('SI')) {
-      n.hijos.push(this.parseRegla());
-    }
+    if (!this.esKw('SI')) { const t = this.actual(); const ln = t?t.ln:'?'; throw new Error(`Línea ${ln}: se esperaba SI (inicio de regla) pero se encontró "${t?t.lexema:'fin de programa'}"`); }
+    while (this.esKw('SI')) n.hijos.push(this.parseRegla());
     return n;
   }
-
   parseRegla() {
     const n = this.nodo('REGLA');
     n.hijos.push(this.hoja(this.esperar(() => this.esKw('SI'), 'SI')));
@@ -423,18 +348,14 @@ class AnalizadorSintactico {
     n.hijos.push(this.hoja(this.esperar(() => this.esSimbolo(';'), ';')));
     return n;
   }
-
   parseCondicion() {
     const n = this.nodo('CONDICION');
-
     if (this.esKw('NO')) {
       const nc = this.nodo('CONDICION_COMPUESTA');
       nc.hijos.push(this.hoja(this.consumir()));
       nc.hijos.push(this.parseCondicion());
-      n.hijos.push(nc);
-      return n;
+      n.hijos.push(nc); return n;
     }
-
     if (this.esSimbolo('(')) {
       const nc = this.nodo('CONDICION_COMPUESTA');
       nc.hijos.push(this.hoja(this.consumir()));
@@ -443,21 +364,17 @@ class AnalizadorSintactico {
       n.hijos.push(nc);
       return this.parseCondicionBinaria(n);
     }
-
     if (this.esId()) {
       const comp = this.nodo('COMPARACION');
       comp.hijos.push(this.hoja(this.consumir()));
-      comp.hijos.push(this.hoja(this.esperar(() => this.esOp(), 'OPERADOR (>, <, >=, <=, =)')));
+      comp.hijos.push(this.hoja(this.esperar(() => this.esOp(), 'OPERADOR')));
       comp.hijos.push(this.hoja(this.esperar(() => this.esValor(), 'NUMERO o CADENA_TEXTO')));
       n.hijos.push(comp);
       return this.parseCondicionBinaria(n);
     }
-
-    const t = this.actual();
-    const ln = t ? t.ln : '?';
-    throw new Error(`Línea ${ln}: se esperaba una condición (IDENTIFICADOR, NO o paréntesis) pero se encontró "${t ? t.lexema : 'fin de programa'}"`);
+    const t = this.actual(); const ln = t?t.ln:'?';
+    throw new Error(`Línea ${ln}: se esperaba una condición pero se encontró "${t?t.lexema:'fin de programa'}"`);
   }
-
   parseCondicionBinaria(izq) {
     if (this.esKw('Y') || this.esKw('O')) {
       const nc = this.nodo('CONDICION_COMPUESTA');
@@ -470,15 +387,9 @@ class AnalizadorSintactico {
     }
     return izq;
   }
-
   parseAccion() {
     const n = this.nodo('ACCION');
-    n.hijos.push(this.hoja(
-      this.esperar(
-        () => ['APROBAR','RECHAZAR','CONDICIONAR'].some(a => this.esKw(a)),
-        'APROBAR, RECHAZAR o CONDICIONAR'
-      )
-    ));
+    n.hijos.push(this.hoja(this.esperar(() => ['APROBAR','RECHAZAR','CONDICIONAR'].some(a => this.esKw(a)), 'APROBAR, RECHAZAR o CONDICIONAR')));
     return n;
   }
 }
@@ -491,15 +402,13 @@ function renderArbol(nodo, prefijo, esUltimo) {
   const conector  = esUltimo ? '└── ' : '├── ';
   const extension = esUltimo ? '    ' : '│   ';
   let lineas = [];
-
   if (nodo.esHoja) {
     const tipo = nodo.tipo ? `  <span class="tree-tipo">(${nodo.tipo})</span>` : '';
     lineas.push(`${prefijo}${conector}<span class="tree-leaf">${esc(nodo.nombre)}</span>${tipo}`);
   } else {
     lineas.push(`${prefijo}${conector}<span class="tree-node">${esc(nodo.nombre)}</span>`);
-    (nodo.hijos || []).forEach((hijo, i) => {
-      const ultimo = i === nodo.hijos.length - 1;
-      lineas = lineas.concat(renderArbol(hijo, prefijo + extension, ultimo));
+    (nodo.hijos||[]).forEach((hijo, i) => {
+      lineas = lineas.concat(renderArbol(hijo, prefijo + extension, i === nodo.hijos.length - 1));
     });
   }
   return lineas;
@@ -507,28 +416,27 @@ function renderArbol(nodo, prefijo, esUltimo) {
 
 function arbolATexto(raiz) {
   let lineas = [`<span class="tree-node">${esc(raiz.nombre)}</span>`];
-  (raiz.hijos || []).forEach((hijo, i) => {
-    const ultimo = i === raiz.hijos.length - 1;
-    lineas = lineas.concat(renderArbol(hijo, '', ultimo));
+  (raiz.hijos||[]).forEach((hijo, i) => {
+    lineas = lineas.concat(renderArbol(hijo, '', i === raiz.hijos.length - 1));
   });
   return lineas.join('\n');
 }
 
 // ═══════════════════════════════════════════════════════
-//  RENDER SINTÁCTICO (con sugerencias mejoradas)
+//  RENDER SINTÁCTICO
 // ═══════════════════════════════════════════════════════
 
 function renderSintactico(tokens) {
-  const errLex   = cnt(tokens, 'ERROR_LEXICO');
-  const sintEl   = document.getElementById('sint-resultado');
-  const arbolWrap= document.getElementById('arbol-wrap');
-  const arbolPre = document.getElementById('arbol-pre');
+  const errLex = cnt(tokens, 'ERROR_LEXICO');
+  const sintEl = document.getElementById('sint-resultado');
+  const arbolWrap = document.getElementById('arbol-wrap');
+  const arbolPre  = document.getElementById('arbol-pre');
 
   if (errLex > 0) {
     sintEl.innerHTML = `
       <div class="sint-badge sint-warn">⚠ Análisis sintáctico no ejecutado</div>
-      <p class="sint-msg">Corrija los <strong>${errLex} error${errLex > 1 ? 'es' : ''} léxico${errLex > 1 ? 's' : ''}</strong> antes de continuar con el análisis sintáctico.</p>
-      <div class="sugerencia">💡 Revisa los tokens marcados en rojo en el panel de resaltado. Pasa el cursor sobre ellos para ver el detalle del error.</div>`;
+      <p class="sint-msg">Corrija los <strong>${errLex} error${errLex>1?'es':''} léxico${errLex>1?'s':''}</strong> antes de continuar.</p>
+      <div class="sugerencia">💡 Revisa los tokens marcados en rojo en el panel de resaltado.</div>`;
     arbolWrap.style.display = 'none';
     return null;
   }
@@ -541,14 +449,11 @@ function renderSintactico(tokens) {
     arbolWrap.style.display = 'block';
     return arbol;
   } catch (e) {
-    const sugerencia = obtenerSugerencia(e.message);
-    const sugHtml = sugerencia
-      ? `<div class="sugerencia">${sugerencia}</div>`
-      : '';
+    const sug = obtenerSugerencia(e.message);
     sintEl.innerHTML = `
       <div class="sint-badge sint-err">✗ Error sintáctico</div>
       <p class="sint-err-msg">${esc(e.message)}</p>
-      ${sugHtml}`;
+      ${sug ? `<div class="sugerencia">${sug}</div>` : ''}`;
     arbolWrap.style.display = 'none';
     return null;
   }
@@ -559,134 +464,93 @@ function renderSintactico(tokens) {
 // ═══════════════════════════════════════════════════════
 
 class AnalizadorSemantico {
-  constructor() {
-    this.tabla = {};
-    this.pasos = [];
-  }
-
+  constructor() { this.tabla = {}; this.pasos = []; }
   log(msg) { this.pasos.push(msg); }
-
   tipoValor(nodoHoja) {
     if (nodoHoja.tipo === 'NUMERO')       return 'entero';
     if (nodoHoja.tipo === 'CADENA_TEXTO') return 'texto';
     return null;
   }
-
   analizar(arbol) {
     this.log('PASO 1 — Tabla de símbolos inicializada vacía.');
-
-    const nodoDeclaraciones = arbol.hijos.find(h => h.nombre === 'DECLARACIONES');
-    if (nodoDeclaraciones) {
+    const decls = arbol.hijos.find(h => h.nombre === 'DECLARACIONES');
+    if (decls) {
       this.log('PASO 2 — Recorriendo declaraciones de campos...');
-      for (const decl of nodoDeclaraciones.hijos) {
-        this.procesarDeclaracion(decl);
-      }
+      for (const d of decls.hijos) this.procesarDeclaracion(d);
     }
-
-    const nodoReglas = arbol.hijos.find(h => h.nombre === 'REGLAS');
-    if (nodoReglas) {
+    const reglas = arbol.hijos.find(h => h.nombre === 'REGLAS');
+    if (reglas) {
       this.log('PASO 3 — Recorriendo reglas y validando comparaciones...');
-      for (const regla of nodoReglas.hijos) {
-        this.procesarRegla(regla);
-      }
+      for (const r of reglas.hijos) this.procesarRegla(r);
     }
-
     this.log('✓ Análisis semántico completado sin errores.');
     return this.tabla;
   }
-
   procesarDeclaracion(nodoDecl) {
     const hojas = nodoDecl.hijos.filter(h => h.esHoja);
     const tipoToken = hojas.find(h => h.tipo === 'TIPO_DATO');
     const idToken   = hojas.find(h => h.tipo === 'IDENTIFICADOR');
     if (!tipoToken || !idToken) return;
-
     const nombre = idToken.nombre.toLowerCase();
     const tipo   = tipoToken.nombre.toLowerCase();
     const linea  = idToken.ln;
-
-    if (this.tabla[nombre]) {
-      throw new Error(
-        `Línea ${linea}: el campo '${nombre}' ya fue declarado anteriormente (línea ${this.tabla[nombre].linea}).\n` +
-        `No se permite declarar el mismo campo más de una vez.`
-      );
-    }
-
+    if (this.tabla[nombre]) throw new Error(`Línea ${linea}: el campo '${nombre}' ya fue declarado anteriormente (línea ${this.tabla[nombre].linea}).\nNo se permite declarar el mismo campo más de una vez.`);
     this.tabla[nombre] = { nombre, tipo, linea };
     this.log(`  → Campo '${nombre}' (${tipo}) agregado a la tabla de símbolos. [línea ${linea}]`);
   }
-
   procesarRegla(nodo) {
     if (!nodo || !nodo.hijos) return;
     for (const hijo of nodo.hijos) {
-      if (hijo.nombre === 'COMPARACION') {
-        this.procesarComparacion(hijo);
-      } else if (!hijo.esHoja) {
-        this.procesarRegla(hijo);
-      }
+      if (hijo.nombre === 'COMPARACION') this.procesarComparacion(hijo);
+      else if (!hijo.esHoja) this.procesarRegla(hijo);
     }
   }
-
   procesarComparacion(nodoComp) {
     const hojas = nodoComp.hijos.filter(h => h.esHoja);
     const idToken    = hojas[0];
     const valorToken = hojas[2];
     if (!idToken || !valorToken) return;
-
     const nombre = idToken.nombre.toLowerCase();
     const linea  = idToken.ln;
-
-    if (!this.tabla[nombre]) {
-      throw new Error(
-        `Línea ${linea}: el campo '${nombre}' no fue declarado.\n` +
-        `Todos los campos deben declararse con CAMPO antes de usarse en reglas.`
-      );
-    }
-
+    if (!this.tabla[nombre]) throw new Error(`Línea ${linea}: el campo '${nombre}' no fue declarado.\nTodos los campos deben declararse con CAMPO antes de usarse en reglas.`);
     const tipoCampo = this.tabla[nombre].tipo;
     const tipoVal   = this.tipoValor(valorToken);
-
-    if (tipoCampo === 'entero' && tipoVal === 'texto') {
-      throw new Error(
-        `Línea ${linea}: el campo '${nombre}' fue declarado como entero,\n` +
-        `pero se está comparando con el valor ${valorToken.nombre} que es de tipo texto.\n` +
-        `Un campo entero solo puede compararse con valores numéricos.`
-      );
-    }
-
-    if (tipoCampo === 'texto' && tipoVal === 'entero') {
-      throw new Error(
-        `Línea ${linea}: el campo '${nombre}' fue declarado como texto,\n` +
-        `pero se está comparando con el valor ${valorToken.nombre} que es de tipo número.\n` +
-        `Un campo texto solo puede compararse con cadenas entre comillas.`
-      );
-    }
-
+    if (tipoCampo === 'entero' && tipoVal === 'texto') throw new Error(`Línea ${linea}: el campo '${nombre}' fue declarado como entero,\npero se está comparando con el valor ${valorToken.nombre} que es de tipo texto.\nUn campo entero solo puede compararse con valores numéricos.`);
+    if (tipoCampo === 'texto' && tipoVal === 'entero') throw new Error(`Línea ${linea}: el campo '${nombre}' fue declarado como texto,\npero se está comparando con el valor ${valorToken.nombre} que es de tipo número.\nUn campo texto solo puede compararse con cadenas entre comillas.`);
     this.log(`  → Comparación '${nombre} ... ${valorToken.nombre}': tipos compatibles (${tipoCampo}). ✓`);
   }
 }
 
 // ═══════════════════════════════════════════════════════
-//  RENDER SEMÁNTICO (con sugerencias mejoradas)
+//  RENDER SEMÁNTICO
 // ═══════════════════════════════════════════════════════
 
+// Guardamos la tabla globalmente para usarla en el simulador
+let _tablaSimbolos = null;
+let _arbolPrograma = null;
+
 function renderSemantico(arbol) {
-  const semEl    = document.getElementById('sem-resultado');
-  const tablaWrap= document.getElementById('tabla-simbolos-wrap');
-  const tablaEl  = document.getElementById('tabla-simbolos');
+  const semEl     = document.getElementById('sem-resultado');
+  const tablaWrap = document.getElementById('tabla-simbolos-wrap');
+  const tablaEl   = document.getElementById('tabla-simbolos');
+  const simPanel  = document.getElementById('simulador-panel');
+
+  _tablaSimbolos = null;
+  _arbolPrograma = null;
 
   if (!arbol) {
     semEl.innerHTML = `
       <div class="sint-badge sint-warn">⚠ Análisis semántico no ejecutado</div>
       <p class="sint-msg">El análisis semántico requiere que las fases léxica y sintáctica sean exitosas.</p>`;
     tablaWrap.style.display = 'none';
+    simPanel.style.display  = 'none';
     return;
   }
 
   try {
     const semantico = new AnalizadorSemantico();
-    const tabla = semantico.analizar(arbol);
-    const entradas = Object.values(tabla);
+    const tabla     = semantico.analizar(arbol);
+    const entradas  = Object.values(tabla);
 
     const logHtml = semantico.pasos.map(p => `<div class="sem-log-line">${esc(p)}</div>`).join('');
     semEl.innerHTML = `
@@ -694,36 +558,237 @@ function renderSemantico(arbol) {
       <div class="sem-log">${logHtml}</div>`;
 
     let html = `<thead><tr>
-      <th class="col-n">#</th>
-      <th>Nombre del Campo</th>
-      <th>Tipo de Dato</th>
-      <th>Línea de Declaración</th>
+      <th class="col-n">#</th><th>Nombre del Campo</th>
+      <th>Tipo de Dato</th><th>Línea de Declaración</th>
     </tr></thead><tbody>`;
-
     entradas.forEach((e, i) => {
-      const shade = i % 2 === 1;
-      html += `<tr style="animation-delay:${i * 0.06}s${shade ? ';background:rgba(255,255,255,0.015)' : ''}">
-        <td class="col-n">${i + 1}</td>
+      html += `<tr style="animation-delay:${i*0.06}s${i%2===1?';background:rgba(255,255,255,0.015)':''}">
+        <td class="col-n">${i+1}</td>
         <td><span class="tk tk-id">${esc(e.nombre)}</span></td>
-        <td><span class="tk ${e.tipo === 'entero' ? 'tk-num' : 'tk-str'}">${esc(e.tipo)}</span></td>
-        <td class="col-ln" style="text-align:left; padding-left:1rem;">${e.linea}</td>
+        <td><span class="tk ${e.tipo==='entero'?'tk-num':'tk-str'}">${esc(e.tipo)}</span></td>
+        <td class="col-ln" style="text-align:left;padding-left:1rem;">${e.linea}</td>
       </tr>`;
     });
-
     html += '</tbody>';
     tablaEl.innerHTML = html;
     tablaWrap.style.display = 'block';
 
+    // Guardar para el simulador
+    _tablaSimbolos = tabla;
+    _arbolPrograma = arbol;
+
+    // Mostrar y construir el simulador
+    construirFormularioSimulador(tabla);
+    simPanel.style.display = 'block';
+
   } catch (e) {
-    const sugerencia = obtenerSugerencia(e.message);
-    const sugHtml = sugerencia
-      ? `<div class="sugerencia">${sugerencia}</div>`
-      : '';
+    const sug = obtenerSugerencia(e.message);
     semEl.innerHTML = `
       <div class="sint-badge sint-err">✗ Error semántico</div>
       <p class="sint-err-msg">${esc(e.message)}</p>
-      ${sugHtml}`;
+      ${sug ? `<div class="sugerencia">${sug}</div>` : ''}`;
     tablaWrap.style.display = 'none';
+    simPanel.style.display  = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  SIMULADOR DE SOLICITUD DE CRÉDITO
+// ═══════════════════════════════════════════════════════
+
+function construirFormularioSimulador(tabla) {
+  const form = document.getElementById('sim-form');
+  const entradas = Object.values(tabla);
+
+  // Ocultar resultado anterior
+  document.getElementById('sim-resultado-wrap').style.display = 'none';
+
+  let html = '';
+  entradas.forEach(e => {
+    const esEntero = e.tipo === 'entero';
+    const label = e.nombre.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    html += `
+      <div class="sim-field">
+        <label class="sim-label">
+          <span class="sim-field-name">${esc(label)}</span>
+          <span class="tk ${esEntero ? 'tk-num' : 'tk-str'}" style="margin-left:0.4rem;">${esc(e.tipo)}</span>
+        </label>
+        ${esEntero
+          ? `<input class="sim-input" type="number" id="sim-${esc(e.nombre)}" placeholder="Ej: 5000" />`
+          : `<input class="sim-input sim-input-text" type="text" id="sim-${esc(e.nombre)}" placeholder='Ej: "bueno"' />`
+        }
+      </div>`;
+  });
+
+  form.innerHTML = html;
+}
+
+function obtenerValoresSolicitud() {
+  const valores = {};
+  const entradas = Object.values(_tablaSimbolos);
+  for (const e of entradas) {
+    const input = document.getElementById(`sim-${e.nombre}`);
+    if (!input) continue;
+    const raw = input.value.trim();
+    if (raw === '') {
+      throw new Error(`El campo "${e.nombre}" está vacío. Por favor ingresa un valor.`);
+    }
+    if (e.tipo === 'entero') {
+      const num = Number(raw);
+      if (isNaN(num)) throw new Error(`El campo "${e.nombre}" debe ser un número entero.`);
+      valores[e.nombre] = num;
+    } else {
+      // texto: quitar comillas si las puso
+      valores[e.nombre] = raw.replace(/^"|"$/g, '').toLowerCase();
+    }
+  }
+  return valores;
+}
+
+function evaluarCondicion(nodoCondicion, valores) {
+  if (!nodoCondicion || !nodoCondicion.hijos) return false;
+
+  for (const hijo of nodoCondicion.hijos) {
+    if (hijo.nombre === 'COMPARACION') {
+      return evaluarComparacion(hijo, valores);
+    }
+    if (hijo.nombre === 'CONDICION_COMPUESTA') {
+      return evaluarCondicionCompuesta(hijo, valores);
+    }
+  }
+  return false;
+}
+
+function evaluarCondicionCompuesta(nodo, valores) {
+  const hijos = nodo.hijos;
+
+  // NO <condicion>
+  if (hijos.length === 2 && hijos[0].esHoja && hijos[0].nombre.toUpperCase() === 'NO') {
+    return !evaluarCondicion(hijos[1], valores);
+  }
+
+  // ( <condicion> )
+  if (hijos.length === 3 && hijos[0].esHoja && hijos[0].nombre === '(') {
+    return evaluarCondicion(hijos[1], valores);
+  }
+
+  // <condicion> Y/O <condicion>
+  if (hijos.length === 3 && !hijos[0].esHoja) {
+    const izq = evaluarCondicion(hijos[0], valores);
+    const op  = hijos[1].nombre.toUpperCase();
+    const der = evaluarCondicion(hijos[2], valores);
+    if (op === 'Y') return izq && der;
+    if (op === 'O') return izq || der;
+  }
+
+  return false;
+}
+
+function evaluarComparacion(nodoComp, valores) {
+  const hojas = nodoComp.hijos.filter(h => h.esHoja);
+  const campo    = hojas[0].nombre.toLowerCase();
+  const operador = hojas[1].nombre;
+  const valorToken = hojas[2];
+
+  const valorCampo = valores[campo];
+  let valorComparar;
+
+  if (valorToken.tipo === 'NUMERO') {
+    valorComparar = Number(valorToken.nombre);
+  } else {
+    // CADENA_TEXTO: quitar comillas y pasar a minúscula
+    valorComparar = valorToken.nombre.replace(/^"|"$/g, '').toLowerCase();
+  }
+
+  switch (operador) {
+    case '>':  return valorCampo >  valorComparar;
+    case '<':  return valorCampo <  valorComparar;
+    case '>=': return valorCampo >= valorComparar;
+    case '<=': return valorCampo <= valorComparar;
+    case '=':  return valorCampo == valorComparar;
+  }
+  return false;
+}
+
+function reconstruirTextoRegla(nodoRegla) {
+  // Reconstruye texto legible de la regla
+  const hojas = [];
+  function recoger(n) {
+    if (n.esHoja) { hojas.push(n.nombre); return; }
+    (n.hijos || []).forEach(recoger);
+  }
+  recoger(nodoRegla);
+  return hojas.join(' ');
+}
+
+function evaluarSolicitud() {
+  const resultWrap = document.getElementById('sim-resultado-wrap');
+  const resultEl   = document.getElementById('sim-resultado');
+  const detalleEl  = document.getElementById('sim-detalle');
+
+  try {
+    const valores = obtenerValoresSolicitud();
+
+    // Obtener las reglas del árbol
+    const nodoReglas = _arbolPrograma.hijos.find(h => h.nombre === 'REGLAS');
+    if (!nodoReglas) throw new Error('No hay reglas para evaluar.');
+
+    let accionFinal = null;
+    let reglaAplicada = null;
+    let numeroRegla = 0;
+
+    for (const regla of nodoReglas.hijos) {
+      numeroRegla++;
+      // La condición es el segundo hijo (índice 1): SI [condicion] ENTONCES [accion] ;
+      const nodoCondicion = regla.hijos.find(h => h.nombre === 'CONDICION');
+      const nodoAccion    = regla.hijos.find(h => h.nombre === 'ACCION');
+
+      if (!nodoCondicion || !nodoAccion) continue;
+
+      const cumple = evaluarCondicion(nodoCondicion, valores);
+
+      if (cumple) {
+        accionFinal  = nodoAccion.hijos[0].nombre.toUpperCase();
+        reglaAplicada = { numero: numeroRegla, texto: reconstruirTextoRegla(regla) };
+        break;
+      }
+    }
+
+    // Mostrar resultado
+    resultWrap.style.display = 'block';
+    resultWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    if (!accionFinal) {
+      resultEl.innerHTML = `<div class="sim-res sim-res-ninguna">⚪ Ninguna regla aplicó</div>`;
+      detalleEl.innerHTML = `<p class="sim-detalle-txt">Ninguna de las reglas definidas se cumplió con los datos ingresados. El sistema no puede tomar una decisión.</p>`;
+      return;
+    }
+
+    const iconos   = { APROBAR: '✅', RECHAZAR: '❌', CONDICIONAR: '🟡' };
+    const clases   = { APROBAR: 'sim-res-aprobar', RECHAZAR: 'sim-res-rechazar', CONDICIONAR: 'sim-res-condicionar' };
+    const mensajes = {
+      APROBAR:     'La solicitud cumple con los criterios establecidos.',
+      RECHAZAR:    'La solicitud no cumple con los criterios mínimos.',
+      CONDICIONAR: 'La solicitud puede ser aprobada bajo condiciones adicionales.'
+    };
+
+    resultEl.innerHTML = `
+      <div class="sim-res ${clases[accionFinal]}">
+        <span class="sim-res-icon">${iconos[accionFinal]}</span>
+        <span class="sim-res-text">${accionFinal}</span>
+      </div>`;
+
+    detalleEl.innerHTML = `
+      <p class="sim-detalle-txt">${mensajes[accionFinal]}</p>
+      <div class="sim-regla-aplicada">
+        <span class="sim-regla-label">Regla ${reglaAplicada.numero} aplicada:</span>
+        <code class="sim-regla-codigo">${esc(reglaAplicada.texto)}</code>
+      </div>`;
+
+  } catch (e) {
+    resultWrap.style.display = 'block';
+    resultEl.innerHTML = `<div class="sim-res sim-res-err">⚠ ${esc(e.message)}</div>`;
+    detalleEl.innerHTML = '';
   }
 }
 
@@ -738,8 +803,7 @@ function updateLineNumbers() {
 }
 
 function syncScroll() {
-  const editor = document.getElementById('editor');
-  document.getElementById('line-nums').scrollTop = editor.scrollTop;
+  document.getElementById('line-nums').scrollTop = document.getElementById('editor').scrollTop;
 }
 
 function ocultarHint() {
@@ -772,12 +836,13 @@ function limpiar() {
   document.getElementById('sem-resultado').innerHTML =
     `<div class="empty" style="min-height:60px;"><span>El resultado del análisis semántico aparecerá aquí</span></div>`;
   document.getElementById('tabla-simbolos-wrap').style.display = 'none';
+  document.getElementById('simulador-panel').style.display = 'none';
   ['kw','td','id','op','num','str','sym','err'].forEach(k => {
     document.getElementById('sc-' + k).textContent = '0';
   });
+  _tablaSimbolos = null;
+  _arbolPrograma = null;
 }
-
-// ── Ejemplos rápidos ────────────────────────────────────
 
 function cargarEjemplo(nombre) {
   const codigo = EJEMPLOS[nombre];
@@ -786,18 +851,12 @@ function cargarEjemplo(nombre) {
   editor.value = codigo;
   updateLineNumbers();
   ocultarHint();
-
-  // Resaltar el botón activo brevemente
   document.querySelectorAll('.ej-btn, .ej-btn-err').forEach(b => b.classList.remove('ej-btn-active'));
   event.target.classList.add('ej-btn-active');
   setTimeout(() => event.target.classList.remove('ej-btn-active'), 600);
-
-  // Auto-analizar
   analizar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// ── Referencia rápida ────────────────────────────────────
 
 function toggleReferencia() {
   const panel = document.getElementById('referencia-panel');
@@ -806,8 +865,6 @@ function toggleReferencia() {
   panel.style.display = visible ? 'none' : 'block';
   btn.classList.toggle('btn-ref-active', !visible);
 }
-
-// ── Modal de onboarding ──────────────────────────────────
 
 function abrirModal() {
   document.getElementById('modal-onboarding').classList.add('modal-visible');
@@ -827,14 +884,10 @@ function cargarEjemploDesdeModal() {
   setTimeout(() => analizar(), 150);
 }
 
-// ── Cerrar modal al hacer clic fuera ────────────────────
-
 document.addEventListener('click', e => {
   const overlay = document.getElementById('modal-onboarding');
   if (e.target === overlay) cerrarModal();
 });
-
-// ── Init ─────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', () => {
   updateLineNumbers();
@@ -844,8 +897,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (editor.value.trim()) ocultarHint();
   });
   editor.addEventListener('scroll', syncScroll);
-
-  // Mostrar modal solo si es la primera visita
   if (!localStorage.getItem('analizador_visto')) {
     setTimeout(() => abrirModal(), 400);
   }
