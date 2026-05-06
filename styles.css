@@ -995,11 +995,7 @@ body {
   gap: 1rem;
 }
 
-.sim-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
+.sim-field { display: flex; flex-direction: column; gap: 0.4rem; }
 
 .sim-label {
   display: flex;
@@ -1011,9 +1007,7 @@ body {
   text-transform: capitalize;
 }
 
-.sim-field-name {
-  color: var(--text);
-}
+.sim-field-name { color: var(--text); }
 
 .sim-input {
   background: var(--surface2);
@@ -1034,12 +1028,9 @@ body {
 }
 
 .sim-input::placeholder { color: var(--text-dim); opacity: 0.5; }
-
 .sim-input-text { color: var(--str); }
 
-.sim-btn-row {
-  margin-top: 0.5rem;
-}
+.sim-btn-row { margin-top: 0.5rem; }
 
 .btn-sim {
   background: linear-gradient(135deg, var(--accent), #00b894);
@@ -1052,17 +1043,11 @@ body {
   border: none;
   cursor: pointer;
   transition: all 0.18s ease;
-  letter-spacing: 0.01em;
 }
 
-.btn-sim:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(0,229,184,0.35);
-}
-
+.btn-sim:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,229,184,0.35); }
 .btn-sim:active { transform: translateY(0); }
 
-/* Resultado */
 .sim-resultado-wrap {
   border-top: 1px solid var(--border);
   padding-top: 1.4rem;
@@ -1085,11 +1070,11 @@ body {
 .sim-res-icon { font-size: 2rem; }
 .sim-res-text { font-size: 1.8rem; letter-spacing: 0.05em; }
 
-.sim-res-aprobar    { background: rgba(80,250,123,0.12); border: 1px solid rgba(80,250,123,0.3); color: var(--id); }
-.sim-res-rechazar   { background: rgba(255,85,85,0.12);  border: 1px solid rgba(255,85,85,0.3);  color: var(--err); }
-.sim-res-condicionar{ background: rgba(255,184,108,0.12);border: 1px solid rgba(255,184,108,0.3);color: var(--num); }
-.sim-res-ninguna    { background: rgba(255,255,255,0.04); border: 1px solid var(--border2); color: var(--text-dim); font-size: 1.1rem; }
-.sim-res-err        { background: var(--err-bg); border: 1px solid rgba(255,85,85,0.3); color: var(--err); font-size: 0.9rem; font-family: 'Outfit', sans-serif; font-weight: 600; }
+.sim-res-aprobar     { background: rgba(80,250,123,0.12);  border: 1px solid rgba(80,250,123,0.3);  color: var(--id); }
+.sim-res-rechazar    { background: rgba(255,85,85,0.12);   border: 1px solid rgba(255,85,85,0.3);   color: var(--err); }
+.sim-res-condicionar { background: rgba(255,184,108,0.12); border: 1px solid rgba(255,184,108,0.3); color: var(--num); }
+.sim-res-ninguna     { background: rgba(255,255,255,0.04); border: 1px solid var(--border2); color: var(--text-dim); font-size: 1.1rem; }
+.sim-res-err         { background: var(--err-bg); border: 1px solid rgba(255,85,85,0.3); color: var(--err); font-size: 0.9rem; font-weight: 600; }
 
 .sim-detalle-txt {
   font-size: 0.88rem;
@@ -1097,12 +1082,7 @@ body {
   line-height: 1.6;
 }
 
-.sim-regla-aplicada {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
-}
+.sim-regla-aplicada { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.5rem; }
 
 .sim-regla-label {
   font-family: 'JetBrains Mono', monospace;
@@ -1127,3 +1107,127 @@ body {
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* ══════════════════════════════════════
+   LOG SEMÁNTICO
+══════════════════════════════════════ */
+
+.sem-log {
+  margin-top: 0.8rem;
+  background: rgba(0,229,184,0.04);
+  border: 1px solid rgba(0,229,184,0.1);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  line-height: 1.9;
+  color: var(--text-mid);
+}
+
+.sem-log-line { white-space: pre-wrap; }
+
+/* ── Sección título del formulario ── */
+.sim-section-title {
+  grid-column: 1 / -1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(0,229,184,0.15);
+  margin-bottom: 0.2rem;
+}
+
+.sim-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: var(--border);
+  margin: 0.4rem 0;
+}
+
+/* ── Info del solicitante en resultado ── */
+.sim-folio {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+
+.sim-solicitante-info {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+  padding: 0.7rem 1rem;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.sim-datos-evaluados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
+}
+
+.sim-dato-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 0.2rem 0.65rem;
+  color: var(--text-mid);
+}
+
+.sim-dato-chip b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Botón PDF ── */
+.sim-pdf-row { margin-top: 1rem; }
+
+.btn-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(0,229,184,0.35);
+  color: var(--accent);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem 1.3rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-pdf:hover {
+  background: rgba(0,229,184,0.08);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ── Historial ── */
+.hist-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.hist-aprobar     { background: rgba(80,250,123,0.12);  color: var(--id);  border: 1px solid rgba(80,250,123,0.25); }
+.hist-rechazar    { background: rgba(255,85,85,0.12);   color: var(--err); border: 1px solid rgba(255,85,85,0.25); }
+.hist-condicionar { background: rgba(255,184,108,0.12); color: var(--num); border: 1px solid rgba(255,184,108,0.25); }
+.hist-ninguna     { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border); }

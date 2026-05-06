@@ -596,14 +596,30 @@ function renderSemantico(arbol) {
 //  SIMULADOR DE SOLICITUD DE CRÉDITO
 // ═══════════════════════════════════════════════════════
 
+// Historial de evaluaciones en sesión
+let _historial = [];
+let _ultimoResultado = null; // guarda datos del último resultado para el PDF
+
 function construirFormularioSimulador(tabla) {
   const form = document.getElementById('sim-form');
   const entradas = Object.values(tabla);
 
-  // Ocultar resultado anterior
   document.getElementById('sim-resultado-wrap').style.display = 'none';
 
-  let html = '';
+  // Campos del solicitante (fijos)
+  let html = `
+    <div class="sim-section-title">Datos del Solicitante</div>
+    <div class="sim-field">
+      <label class="sim-label"><span class="sim-field-name">Nombre Completo</span></label>
+      <input class="sim-input" type="text" id="sim-solicitante-nombre" placeholder="Ej: Juan García López" />
+    </div>
+    <div class="sim-field">
+      <label class="sim-label"><span class="sim-field-name">DPI / Identificación</span></label>
+      <input class="sim-input" type="text" id="sim-solicitante-dpi" placeholder="Ej: 1234567890101" />
+    </div>
+    <div class="sim-divider"></div>
+    <div class="sim-section-title">Datos para Evaluación</div>`;
+
   entradas.forEach(e => {
     const esEntero = e.tipo === 'entero';
     const label = e.nombre.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -623,6 +639,14 @@ function construirFormularioSimulador(tabla) {
   form.innerHTML = html;
 }
 
+function obtenerDatosSolicitante() {
+  const nombre = document.getElementById('sim-solicitante-nombre').value.trim();
+  const dpi    = document.getElementById('sim-solicitante-dpi').value.trim();
+  if (!nombre) throw new Error('El nombre del solicitante es obligatorio.');
+  if (!dpi)    throw new Error('El DPI o número de identificación es obligatorio.');
+  return { nombre, dpi };
+}
+
 function obtenerValoresSolicitud() {
   const valores = {};
   const entradas = Object.values(_tablaSimbolos);
@@ -638,7 +662,6 @@ function obtenerValoresSolicitud() {
       if (isNaN(num)) throw new Error(`El campo "${e.nombre}" debe ser un número entero.`);
       valores[e.nombre] = num;
     } else {
-      // texto: quitar comillas si las puso
       valores[e.nombre] = raw.replace(/^"|"$/g, '').toLowerCase();
     }
   }
@@ -727,50 +750,50 @@ function evaluarSolicitud() {
   const detalleEl  = document.getElementById('sim-detalle');
 
   try {
-    const valores = obtenerValoresSolicitud();
+    const solicitante = obtenerDatosSolicitante();
+    const valores     = obtenerValoresSolicitud();
 
-    // Obtener las reglas del árbol
     const nodoReglas = _arbolPrograma.hijos.find(h => h.nombre === 'REGLAS');
     if (!nodoReglas) throw new Error('No hay reglas para evaluar.');
 
-    let accionFinal = null;
+    let accionFinal   = null;
     let reglaAplicada = null;
-    let numeroRegla = 0;
+    let numeroRegla   = 0;
 
     for (const regla of nodoReglas.hijos) {
       numeroRegla++;
-      // La condición es el segundo hijo (índice 1): SI [condicion] ENTONCES [accion] ;
       const nodoCondicion = regla.hijos.find(h => h.nombre === 'CONDICION');
       const nodoAccion    = regla.hijos.find(h => h.nombre === 'ACCION');
-
       if (!nodoCondicion || !nodoAccion) continue;
-
-      const cumple = evaluarCondicion(nodoCondicion, valores);
-
-      if (cumple) {
-        accionFinal  = nodoAccion.hijos[0].nombre.toUpperCase();
+      if (evaluarCondicion(nodoCondicion, valores)) {
+        accionFinal   = nodoAccion.hijos[0].nombre.toUpperCase();
         reglaAplicada = { numero: numeroRegla, texto: reconstruirTextoRegla(regla) };
         break;
       }
     }
 
-    // Mostrar resultado
     resultWrap.style.display = 'block';
     resultWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    if (!accionFinal) {
-      resultEl.innerHTML = `<div class="sim-res sim-res-ninguna">⚪ Ninguna regla aplicó</div>`;
-      detalleEl.innerHTML = `<p class="sim-detalle-txt">Ninguna de las reglas definidas se cumplió con los datos ingresados. El sistema no puede tomar una decisión.</p>`;
-      return;
-    }
+    const ahora    = new Date();
+    const fechaStr = ahora.toLocaleDateString('es-GT', { day:'2-digit', month:'long', year:'numeric' });
+    const horaStr  = ahora.toLocaleTimeString('es-GT', { hour:'2-digit', minute:'2-digit' });
+    const folio    = 'SOL-' + Date.now().toString().slice(-6);
 
     const iconos   = { APROBAR: '✅', RECHAZAR: '❌', CONDICIONAR: '🟡' };
     const clases   = { APROBAR: 'sim-res-aprobar', RECHAZAR: 'sim-res-rechazar', CONDICIONAR: 'sim-res-condicionar' };
     const mensajes = {
-      APROBAR:     'La solicitud cumple con los criterios establecidos.',
-      RECHAZAR:    'La solicitud no cumple con los criterios mínimos.',
-      CONDICIONAR: 'La solicitud puede ser aprobada bajo condiciones adicionales.'
+      APROBAR:     'La solicitud cumple con los criterios establecidos y se recomienda su aprobación.',
+      RECHAZAR:    'La solicitud no cumple con los criterios mínimos requeridos por la institución.',
+      CONDICIONAR: 'La solicitud puede procesarse bajo condiciones y garantías adicionales.'
     };
+
+    if (!accionFinal) {
+      resultEl.innerHTML = `<div class="sim-res sim-res-ninguna">⚪ Ninguna regla aplicó</div>`;
+      detalleEl.innerHTML = `<p class="sim-detalle-txt">Ninguna de las reglas definidas se cumplió con los datos ingresados.</p>`;
+      agregarHistorial({ solicitante, accion: 'SIN RESULTADO', folio, fechaStr, horaStr });
+      return;
+    }
 
     resultEl.innerHTML = `
       <div class="sim-res ${clases[accionFinal]}">
@@ -778,18 +801,186 @@ function evaluarSolicitud() {
         <span class="sim-res-text">${accionFinal}</span>
       </div>`;
 
+    // Resumen de datos evaluados
+    const datosHtml = Object.entries(valores).map(([k, v]) =>
+      `<span class="sim-dato-chip"><b>${k}</b>: ${v}</span>`
+    ).join('');
+
     detalleEl.innerHTML = `
+      <div class="sim-folio">Folio: <strong>${folio}</strong> &nbsp;·&nbsp; ${fechaStr} ${horaStr}</div>
+      <div class="sim-solicitante-info">
+        <span>👤 <strong>${esc(solicitante.nombre)}</strong></span>
+        <span>🪪 DPI: ${esc(solicitante.dpi)}</span>
+      </div>
       <p class="sim-detalle-txt">${mensajes[accionFinal]}</p>
+      <div class="sim-datos-evaluados">${datosHtml}</div>
       <div class="sim-regla-aplicada">
         <span class="sim-regla-label">Regla ${reglaAplicada.numero} aplicada:</span>
         <code class="sim-regla-codigo">${esc(reglaAplicada.texto)}</code>
+      </div>
+      <div class="sim-pdf-row">
+        <button class="btn btn-pdf" onclick="generarPDF()">
+          ⬇ Descargar dictamen PDF
+        </button>
       </div>`;
+    // Guardar datos para el PDF
+    _ultimoResultado = { folio, nombre: solicitante.nombre, dpi: solicitante.dpi, accion: accionFinal, regla: reglaAplicada.texto, fecha: fechaStr, hora: horaStr, valores };
+
+    agregarHistorial({ solicitante, accion: accionFinal, folio, fechaStr, horaStr, regla: reglaAplicada.texto });
 
   } catch (e) {
     resultWrap.style.display = 'block';
     resultEl.innerHTML = `<div class="sim-res sim-res-err">⚠ ${esc(e.message)}</div>`;
     detalleEl.innerHTML = '';
   }
+}
+
+// ─── HISTORIAL ───────────────────────────────────────────
+
+function agregarHistorial(entry) {
+  _historial.unshift(entry); // más reciente primero
+  renderHistorial();
+  const wrap = document.getElementById('historial-wrap');
+  if (wrap) wrap.style.display = 'block';
+}
+
+function renderHistorial() {
+  const el = document.getElementById('historial-tabla');
+  if (!el) return;
+  const clases = { APROBAR: 'hist-aprobar', RECHAZAR: 'hist-rechazar', CONDICIONAR: 'hist-condicionar', 'SIN RESULTADO': 'hist-ninguna' };
+  let html = `<thead><tr>
+    <th class="col-n">#</th>
+    <th>Folio</th>
+    <th>Solicitante</th>
+    <th>DPI</th>
+    <th>Resultado</th>
+    <th>Fecha</th>
+    <th>Hora</th>
+  </tr></thead><tbody>`;
+  _historial.forEach((e, i) => {
+    html += `<tr style="animation-delay:${i*0.04}s">
+      <td class="col-n">${_historial.length - i}</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-dim)">${esc(e.folio)}</span></td>
+      <td>${esc(e.solicitante.nombre)}</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">${esc(e.solicitante.dpi)}</span></td>
+      <td><span class="hist-badge ${clases[e.accion]||''}">${esc(e.accion)}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-mid)">${esc(e.fechaStr)}</td>
+      <td style="font-size:0.78rem;color:var(--text-mid)">${esc(e.horaStr)}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  el.innerHTML = html;
+}
+
+// ─── GENERADOR DE PDF ────────────────────────────────────
+
+function generarPDF() {
+  if (!_ultimoResultado) return;
+  const { folio, nombre, dpi, accion, regla, fecha, hora, valores } = _ultimoResultado;
+  const iconos   = { APROBAR: '✅  APROBADO', RECHAZAR: '❌  RECHAZADO', CONDICIONAR: '🟡  CONDICIONADO' };
+  const colores  = { APROBAR: '#1a6b3a', RECHAZAR: '#9B2C2C', CONDICIONAR: '#7B4F00' };
+  const fondos   = { APROBAR: '#F0FFF4', RECHAZAR: '#FFF5F5', CONDICIONAR: '#FFFBEB' };
+  const color    = colores[accion] || '#333';
+  const fondo    = fondos[accion]  || '#fff';
+
+  const datosRows = Object.entries(valores).map(([k, v]) =>
+    `<tr><td style="padding:6px 12px;color:#555;font-size:13px;">${k.replace(/_/g,' ')}</td><td style="padding:6px 12px;font-weight:600;font-size:13px;">${v}</td></tr>`
+  ).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #222; }
+  .membrete { background: #0d1b2a; color: white; padding: 28px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .membrete-titulo { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+  .membrete-sub { font-size: 11px; opacity: 0.7; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .membrete-folio { text-align: right; font-size: 11px; opacity: 0.6; }
+  .membrete-folio strong { display: block; font-size: 15px; opacity: 1; font-family: monospace; }
+  .body { padding: 36px 40px; }
+  .titulo-doc { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+  .subtitulo { font-size: 22px; font-weight: 800; color: #0d1b2a; margin-bottom: 28px; }
+  .seccion { margin-bottom: 24px; }
+  .seccion-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+  .info-row { display: flex; gap: 40px; }
+  .info-item label { font-size: 11px; color: #888; display: block; margin-bottom: 3px; }
+  .info-item span { font-size: 15px; font-weight: 600; }
+  .resultado-box { background: ${fondo}; border: 2px solid ${color}; border-radius: 10px; padding: 24px 32px; display: flex; align-items: center; gap: 20px; margin: 28px 0; }
+  .resultado-texto { font-size: 28px; font-weight: 900; color: ${color}; letter-spacing: 2px; }
+  .resultado-desc { font-size: 13px; color: #555; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; }
+  table tr:nth-child(even) td { background: #f9f9f9; }
+  .regla-box { background: #f0fffe; border-left: 4px solid #00b894; padding: 12px 16px; border-radius: 0 6px 6px 0; font-family: monospace; font-size: 12px; color: #0d4f3c; margin-top: 8px; line-height: 1.6; }
+  .footer { margin-top: 48px; border-top: 1px solid #eee; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .sello { text-align: center; }
+  .sello-linea { width: 200px; border-top: 1px solid #333; margin: 0 auto 6px; }
+  .sello-texto { font-size: 11px; color: #666; }
+  .nota { font-size: 10px; color: #aaa; max-width: 300px; line-height: 1.5; }
+  @media print { body { -webkit-print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div class="membrete">
+  <div>
+    <div class="membrete-titulo">Sistema de Evaluación de Crédito</div>
+    <div class="membrete-sub">Dictamen Automático de Solicitud</div>
+  </div>
+  <div class="membrete-folio">
+    Folio
+    <strong>${folio}</strong>
+    ${fecha} · ${hora}
+  </div>
+</div>
+<div class="body">
+  <div class="titulo-doc">Documento Oficial</div>
+  <div class="subtitulo">Dictamen de Evaluación Crediticia</div>
+
+  <div class="seccion">
+    <div class="seccion-label">Datos del Solicitante</div>
+    <div class="info-row">
+      <div class="info-item"><label>Nombre Completo</label><span>${nombre}</span></div>
+      <div class="info-item"><label>DPI / Identificación</label><span>${dpi}</span></div>
+    </div>
+  </div>
+
+  <div class="seccion">
+    <div class="seccion-label">Resultado de la Evaluación</div>
+    <div class="resultado-box">
+      <div>
+        <div class="resultado-texto">${iconos[accion] || accion}</div>
+        <div class="resultado-desc">Determinado automáticamente mediante el motor de reglas.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion">
+    <div class="seccion-label">Datos Evaluados</div>
+    <table>${datosRows}</table>
+  </div>
+
+  <div class="seccion">
+    <div class="seccion-label">Regla Aplicada</div>
+    <div class="regla-box">${regla}</div>
+  </div>
+
+  <div class="footer">
+    <div class="nota">Este documento fue generado automáticamente por el Sistema de Evaluación de Crédito. La decisión está basada en las reglas definidas por la institución.</div>
+    <div class="sello">
+      <div class="sello-linea"></div>
+      <div class="sello-texto">Firma del Sistema</div>
+      <div class="sello-texto" style="font-family:monospace;font-size:10px;color:#aaa">${folio}</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>`;
+
+  const ventana = window.open('', '_blank');
+  ventana.document.write(html);
+  ventana.document.close();
+  ventana.focus();
+  setTimeout(() => ventana.print(), 500);
 }
 
 // ═══════════════════════════════════════════════════════
