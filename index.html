@@ -3,8 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analizador Léxico – Reglas de Crédito</title>
+  <title>Analizador – Reglas de Crédito</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Nuevos tipos de token ── */
+    .tk-bool  { background: rgba(167,139,250,.18); color: #a78bfa; border-color: rgba(167,139,250,.3); }
+    .tk-date  { background: rgba(251,191,36,.15);  color: #f59e0b; border-color: rgba(251,191,36,.3); }
+    .tk-dec   { background: rgba(52,211,153,.15);  color: #34d399; border-color: rgba(52,211,153,.3); }
+    .hl-bool  { color: #a78bfa; }
+    .hl-date  { color: #f59e0b; }
+    .hl-dec   { color: #34d399; }
+
+    /* ── Advertencias semánticas ── */
+    .sem-warnings     { margin-top: .8rem; display: flex; flex-direction: column; gap: .4rem; }
+    .sem-warn-line    { background: rgba(251,191,36,.1); border-left: 3px solid #f59e0b;
+                        padding: .45rem .75rem; border-radius: 0 6px 6px 0; font-size: .82rem; color: #fbbf24; }
+
+    /* ── Simulador grid ── */
+    .sim-fields-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: .9rem; }
+    .sim-field-hint   { font-size: .72rem; color: var(--text-dim); margin-top: .25rem; display: block; }
+    .sim-select       { appearance: none; cursor: pointer; }
+
+    /* ── Panel de explicación ── */
+    .exp-panel        { background: rgba(255,255,255,.03); border: 1px solid var(--border);
+                        border-radius: 10px; padding: 1.2rem 1.4rem; margin: 1rem 0; }
+    .exp-seccion      { margin-bottom: 1.2rem; }
+    .exp-seccion:last-child { margin-bottom: 0; }
+    .exp-titulo       { font-size: .7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+                        color: var(--text-dim); margin-bottom: .7rem;
+                        padding-bottom: .4rem; border-bottom: 1px solid var(--border); }
+    .exp-intro        { font-size: .88rem; color: var(--text-mid); margin: 0 0 .7rem; }
+    .exp-regla-codigo { display: block; font-family: 'JetBrains Mono', monospace; font-size: .8rem;
+                        background: rgba(0,184,148,.08); border-left: 3px solid #00b894;
+                        padding: .6rem .9rem; border-radius: 0 6px 6px 0; color: #6ee7b7; line-height: 1.6; }
+    .exp-condiciones  { display: flex; flex-direction: column; gap: .5rem; }
+    .exp-cond-item    { display: flex; align-items: flex-start; gap: .6rem; padding: .5rem .8rem;
+                        border-radius: 6px; font-size: .84rem; line-height: 1.5; }
+    .exp-cond-ok      { background: rgba(52,211,153,.08); border-left: 3px solid #34d399; }
+    .exp-cond-fail    { background: rgba(248,113,113,.08); border-left: 3px solid #f87171; }
+    .exp-cond-icon    { font-size: 1rem; flex-shrink: 0; margin-top: .05rem; }
+    .exp-cond-texto   { color: var(--text-mid); }
+    .exp-cond-texto strong { color: var(--text); }
+    .exp-cond-texto em      { color: #f87171; font-style: normal; }
+    .exp-regla-no-apl { margin-bottom: .9rem; }
+    .exp-regla-no-apl-header { font-size: .78rem; color: var(--text-dim); margin-bottom: .4rem; font-style: italic; }
+    .exp-accion-label { font-weight: 700; color: var(--text-mid); font-style: normal; }
+    .exp-recom        { background: rgba(251,191,36,.05); border: 1px solid rgba(251,191,36,.2); border-radius: 8px; }
+    .exp-recom .exp-titulo { color: #f59e0b; border-color: rgba(251,191,36,.2); }
+    .exp-recom-lista  { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: .4rem; }
+    .exp-recom-item   { font-size: .84rem; color: var(--text-mid); line-height: 1.5; }
+    .exp-recom-item strong { color: #fbbf24; }
+
+    /* ── Tabla de reglas evaluadas ── */
+    .reglas-tabla-wrap  { overflow-x: auto; }
+    .reglas-eval-table  { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .reglas-eval-table th { background: rgba(255,255,255,.04); padding: .55rem .8rem;
+                            text-align: left; font-size: .7rem; letter-spacing: 1px;
+                            text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+    .reglas-eval-table td { padding: .55rem .8rem; border-bottom: 1px solid rgba(255,255,255,.04);
+                            vertical-align: middle; }
+    .fila-aplicada td   { background: rgba(52,211,153,.06); }
+    .regla-mini         { font-family: 'JetBrains Mono', monospace; font-size: .75rem;
+                          color: var(--text-mid); white-space: nowrap; }
+    .eval-badge         { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .55rem;
+                          border-radius: 99px; font-size: .72rem; font-weight: 700; }
+    .badge-apr          { background: rgba(52,211,153,.15); color: #34d399; }
+    .badge-rec          { background: rgba(248,113,113,.15); color: #f87171; }
+    .badge-con          { background: rgba(251,191,36,.15); color: #fbbf24; }
+    .badge-aplicada     { background: rgba(52,211,153,.2); color: #34d399; border: 1px solid rgba(52,211,153,.4);
+                          font-size: .7rem; font-weight: 700; padding: .15rem .5rem; border-radius: 99px; }
+    .badge-cumplida-no  { font-size: .7rem; color: var(--text-dim); font-style: italic; }
+    .badge-no-cumplida  { font-size: .7rem; color: rgba(248,113,113,.7); }
+    .col-cumplida       { text-align: center; }
+  </style>
 </head>
 <body>
 
@@ -12,35 +83,35 @@
 <div class="modal-overlay" id="modal-onboarding">
   <div class="modal">
     <div class="modal-badge">👋 Bienvenido</div>
-    <h2 class="modal-title">¿Cómo funciona este analizador?</h2>
-    <p class="modal-desc">Este compilador analiza un lenguaje especializado para definir reglas de evaluación de crédito. Sigue estos 3 pasos:</p>
+    <h2 class="modal-title">¿Cómo funciona este compilador?</h2>
+    <p class="modal-desc">Compilador de lenguaje especializado para definir y evaluar reglas de crédito. Ahora con tipos extendidos, operadores de rango y explicaciones detalladas.</p>
     <div class="onboarding-steps">
       <div class="ob-step">
         <div class="ob-step-num">1</div>
         <div class="ob-step-body">
           <strong>Declara los campos</strong>
-          <p>Define qué datos usarás y de qué tipo son: <code>entero</code> o <code>texto</code>.</p>
-          <code class="ob-code">CAMPO entero ingreso ;</code>
+          <p>Cinco tipos disponibles: <code>entero</code>, <code>decimal</code>, <code>texto</code>, <code>booleano</code>, <code>fecha</code>.</p>
+          <code class="ob-code">CAMPO decimal ingreso_mensual ;</code>
         </div>
       </div>
       <div class="ob-step">
         <div class="ob-step-num">2</div>
         <div class="ob-step-body">
           <strong>Escribe las reglas</strong>
-          <p>Cada regla evalúa condiciones y define una acción: <code>APROBAR</code>, <code>RECHAZAR</code> o <code>CONDICIONAR</code>.</p>
-          <code class="ob-code">SI ingreso >= 5000 ENTONCES APROBAR ;</code>
+          <p>Usa <code>PRIORIDAD</code>, el operador <code>ENTRE</code>, y conectores <code>Y</code> / <code>O</code> / <code>NO</code>.</p>
+          <code class="ob-code">PRIORIDAD 1 : SI score_crediticio ENTRE 600 Y 750 ENTONCES CONDICIONAR ;</code>
         </div>
       </div>
       <div class="ob-step">
         <div class="ob-step-num">3</div>
         <div class="ob-step-body">
-          <strong>Presiona Analizar</strong>
-          <p>El sistema ejecutará las tres fases: léxica, sintáctica y semántica, mostrando resultados en tiempo real.</p>
+          <strong>Evalúa y obtén explicaciones</strong>
+          <p>El simulador no solo dice el resultado — explica <em>por qué</em>, qué condiciones fallaron y qué se puede mejorar.</p>
         </div>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="cargarEjemploDesdeModal()">✦ Cargar ejemplo y empezar</button>
+      <button class="btn btn-primary" onclick="cargarEjemploDesdeModal()">✦ Cargar ejemplo expandido</button>
       <button class="btn btn-ghost" onclick="cerrarModal()">Empezar desde cero</button>
     </div>
   </div>
@@ -48,20 +119,21 @@
 
 <div class="container">
 
-  <!-- Encabezado -->
   <div class="header">
     <h1>Lenguaje de <em>Reglas de Crédito</em></h1>
   </div>
 
   <!-- EJEMPLOS RÁPIDOS -->
   <div class="ejemplos-bar" id="ejemplos-bar">
-    <span class="ejemplos-label">Ejemplos rápidos:</span>
-    <button class="ej-btn" onclick="cargarEjemplo('basico')">✓ Aprobación básica</button>
-    <button class="ej-btn" onclick="cargarEjemplo('compuesto')">⊕ Condiciones compuestas</button>
-    <button class="ej-btn" onclick="cargarEjemplo('texto')">✎ Campos de texto</button>
+    <span class="ejemplos-label">Ejemplos:</span>
+    <button class="ej-btn" onclick="cargarEjemplo('basico')">✓ Básico</button>
+    <button class="ej-btn" onclick="cargarEjemplo('compuesto')">⊕ Compuesto</button>
+    <button class="ej-btn" onclick="cargarEjemplo('expandido')">★ Expandido</button>
+    <button class="ej-btn" onclick="cargarEjemplo('monto')">$ Monto/Tasa</button>
+    <button class="ej-btn" onclick="cargarEjemplo('fechas')">📅 Fechas</button>
     <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_semantico')">⚠ Error semántico</button>
     <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_lexico')">⚠ Error léxico</button>
-    <button class="ej-btn-help" onclick="toggleReferencia()" id="btn-ref" title="Referencia rápida del lenguaje">? Referencia</button>
+    <button class="ej-btn-help" onclick="toggleReferencia()" id="btn-ref">? Referencia</button>
   </div>
 
   <!-- PANEL DE REFERENCIA RÁPIDA -->
@@ -74,16 +146,19 @@
       <div class="ref-col">
         <h4>Estructura del programa</h4>
         <pre class="ref-code">CAMPO [tipo] [nombre] ;
-CAMPO [tipo] [nombre] ;
 ...
-SI [condición] ENTONCES [acción] ;
-SI [condición] ENTONCES [acción] ;
-...</pre>
-        <p class="ref-note">Primero <em>todas</em> las declaraciones, luego <em>todas</em> las reglas.</p>
+[MONTO_MAXIMO : expr ;]
+[TASA : SI cond ENTONCES val ;]
+[PLAZO : SI cond ENTONCES accion ;]
+PRIORIDAD N : SI [cond] ENTONCES [accion] ;
+SI [cond] ENTONCES [accion] ;</pre>
         <h4>Tipos de dato</h4>
         <div class="ref-tokens">
-          <span class="tk tk-td">entero</span> Valores numéricos (ej: 5000)
-          <span class="tk tk-td">texto</span> Cadenas entre comillas (ej: "bueno")
+          <span class="tk tk-td">entero</span> Números enteros (ej: 5000)<br>
+          <span class="tk tk-dec">decimal</span> Números decimales (ej: 5000.50)<br>
+          <span class="tk tk-str">texto</span> Cadenas (ej: "bueno")<br>
+          <span class="tk tk-bool">booleano</span> verdadero / falso<br>
+          <span class="tk tk-date">fecha</span> Formato AAAA-MM-DD
         </div>
       </div>
       <div class="ref-col">
@@ -92,47 +167,56 @@ SI [condición] ENTONCES [acción] ;
           <span class="tk tk-op">&gt;=</span> Mayor o igual &nbsp;
           <span class="tk tk-op">&lt;=</span> Menor o igual<br>
           <span class="tk tk-op">&gt;</span> Mayor que &nbsp;
-          <span class="tk tk-op">&lt;</span> Menor que &nbsp;
-          <span class="tk tk-op">=</span> Igual a
+          <span class="tk tk-op">&lt;</span> Menor que<br>
+          <span class="tk tk-op">=</span> Igual a &nbsp;
+          <span class="tk tk-op">!=</span> Diferente de
+        </div>
+        <h4>Operador de rango</h4>
+        <div class="ref-tokens">
+          <span class="tk tk-kw">ENTRE</span> Rango inclusivo<br>
+          <code class="ref-code" style="margin-top:.5rem">SI score ENTRE 600 Y 750 ENTONCES CONDICIONAR ;</code>
         </div>
         <h4>Conectores lógicos</h4>
         <div class="ref-tokens">
-          <span class="tk tk-kw">Y</span> Ambas condiciones deben cumplirse &nbsp;
-          <span class="tk tk-kw">O</span> Al menos una debe cumplirse &nbsp;
-          <span class="tk tk-kw">NO</span> Niega la condición siguiente
+          <span class="tk tk-kw">Y</span> Ambas condiciones<br>
+          <span class="tk tk-kw">O</span> Al menos una<br>
+          <span class="tk tk-kw">NO</span> Negación
         </div>
-        <h4>Acciones disponibles</h4>
+        <h4>Acciones</h4>
         <div class="ref-tokens">
-          <span class="tk tk-kw">APROBAR</span> Aprueba la solicitud &nbsp;
-          <span class="tk tk-kw">RECHAZAR</span> Rechaza la solicitud &nbsp;
-          <span class="tk tk-kw">CONDICIONAR</span> Aprobación con condiciones
+          <span class="tk tk-kw">APROBAR</span>
+          <span class="tk tk-kw">RECHAZAR</span>
+          <span class="tk tk-kw">CONDICIONAR</span>
         </div>
       </div>
       <div class="ref-col">
-        <h4>Ejemplo completo</h4>
-        <pre class="ref-code ref-code-example">CAMPO entero ingreso ;
-CAMPO entero edad ;
-CAMPO texto historial ;
+        <h4>Ejemplo expandido</h4>
+        <pre class="ref-code ref-code-example">CAMPO decimal ingreso_mensual ;
+CAMPO entero score_crediticio ;
+CAMPO booleano tiene_garantia ;
+CAMPO fecha fecha_nacimiento ;
 
-SI ingreso >= 5000
-   Y edad >= 21
-   ENTONCES APROBAR ;
+PRIORIDAD 1 : SI score_crediticio >= 750
+  Y ingreso_mensual >= 8000.00
+  ENTONCES APROBAR ;
 
-SI historial = "malo"
-   ENTONCES RECHAZAR ;</pre>
-        <h4>Reglas importantes</h4>
+PRIORIDAD 2 : SI score_crediticio
+  ENTRE 600 Y 749
+  ENTONCES CONDICIONAR ;
+
+PRIORIDAD 3 : SI tiene_garantia = falso
+  ENTONCES RECHAZAR ;</pre>
+        <h4>Directivas financieras</h4>
         <ul class="ref-rules">
-          <li>Todo campo debe declararse <strong>antes</strong> de usarse en una regla.</li>
-          <li>Cada sentencia termina con <strong>;</strong></li>
-          <li>Los campos <code>entero</code> solo se comparan con números.</li>
-          <li>Los campos <code>texto</code> solo se comparan con cadenas entre <code>" "</code>.</li>
-          <li>Los nombres de campo no pueden iniciar con un número.</li>
+          <li><code>MONTO_MAXIMO : ingreso_mensual * 48 ;</code></li>
+          <li><code>TASA : SI score >= 700 ENTONCES 8.5 ;</code></li>
+          <li><code>PLAZO : SI plazo_meses &lt;= 60 ENTONCES APROBAR ;</code></li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- Editor + Sidebar stats + Highlight -->
+  <!-- Editor + Sidebar + Highlight -->
   <div class="main-grid">
     <div class="panel">
       <div class="panel-header">
@@ -141,12 +225,12 @@ SI historial = "malo"
         <div class="dot" style="background:#50fa7b"></div>
         <span class="panel-title" style="margin-left:0.4rem">código fuente</span>
         <div class="editor-hint" id="editor-hint">
-          <span class="hint-arrow">↓</span> empieza con <code>CAMPO entero nombre ;</code>
+          <span class="hint-arrow">↓</span> empieza con <code>CAMPO decimal ingreso_mensual ;</code>
         </div>
       </div>
       <div class="editor-wrap">
         <div class="line-numbers" id="line-nums">1</div>
-        <textarea id="editor" placeholder="CAMPO entero ingreso ;&#10;CAMPO texto historial_crediticio ;&#10;&#10;SI ingreso >= 5000 Y edad >= 21 ENTONCES APROBAR ;"></textarea>
+        <textarea id="editor" placeholder="CAMPO decimal ingreso_mensual ;&#10;CAMPO entero score_crediticio ;&#10;&#10;PRIORIDAD 1 : SI score_crediticio >= 700 Y ingreso_mensual >= 5000.00 ENTONCES APROBAR ;"></textarea>
       </div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="analizar()">▶ Analizar</button>
@@ -196,7 +280,7 @@ SI historial = "malo"
     <div class="panel-header"><span class="panel-title">fase 2 — análisis sintáctico</span></div>
     <div style="padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border);">
       <div id="sint-resultado">
-        <div class="empty" style="min-height: 60px;"><span>El resultado del análisis sintáctico aparecerá aquí</span></div>
+        <div class="empty" style="min-height:60px;"><span>El resultado del análisis sintáctico aparecerá aquí</span></div>
       </div>
     </div>
     <div id="arbol-wrap" style="display:none;">
@@ -212,7 +296,7 @@ SI historial = "malo"
     <div class="panel-header"><span class="panel-title">fase 3 — análisis semántico</span></div>
     <div style="padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border);">
       <div id="sem-resultado">
-        <div class="empty" style="min-height: 60px;"><span>El resultado del análisis semántico aparecerá aquí</span></div>
+        <div class="empty" style="min-height:60px;"><span>El resultado del análisis semántico aparecerá aquí</span></div>
       </div>
     </div>
     <div id="tabla-simbolos-wrap" style="display:none;">
@@ -220,39 +304,35 @@ SI historial = "malo"
         <span class="panel-title">tabla de símbolos</span>
         <span class="panel-title-right">construida automáticamente durante el análisis</span>
       </div>
-      <div class="table-wrap" style="min-height: auto; max-height: 320px;">
+      <div class="table-wrap" style="min-height:auto; max-height:320px;">
         <table class="token-table" id="tabla-simbolos"></table>
       </div>
     </div>
   </div>
 
-  <!-- ══ SIMULADOR DE SOLICITUD DE CRÉDITO ══ -->
+  <!-- ══ SIMULADOR ══ -->
   <div class="panel" id="simulador-panel" style="display:none; animation: fadeUp 0.5s 0.6s ease both; margin-top: 1.5rem;">
     <div class="panel-header">
-      <span class="panel-title">🏦 simulador de solicitud de crédito</span>
-      <span class="panel-title-right">ingresa los datos del solicitante y evalúa las reglas</span>
+      <span class="panel-title">simulador de solicitud de crédito</span>
+      <span class="panel-title-right">evaluación con explicaciones detalladas</span>
     </div>
 
     <div class="simulador-body">
-
-      <!-- Formulario de datos -->
       <div class="sim-form-wrap">
-        <p class="sim-desc">Los campos a continuación fueron generados automáticamente a partir de las declaraciones <code>CAMPO</code> del programa. Ingresa los datos del solicitante para ejecutar las reglas.</p>
+        <p class="sim-desc">Los campos se generan automáticamente desde las declaraciones <code>CAMPO</code>. El simulador mostrará <strong>por qué</strong> se tomó cada decisión y qué condiciones fallaron.</p>
         <div class="sim-form" id="sim-form"></div>
         <div class="sim-btn-row">
-          <button class="btn btn-sim" onclick="evaluarSolicitud()">⚡ Evaluar solicitud</button>
+          <button class="btn btn-sim" onclick="evaluarSolicitud()">▶ Evaluar solicitud</button>
         </div>
       </div>
 
-      <!-- Resultado de la evaluación -->
       <div class="sim-resultado-wrap" id="sim-resultado-wrap" style="display:none;">
         <div class="sim-resultado" id="sim-resultado"></div>
         <div class="sim-detalle" id="sim-detalle"></div>
       </div>
-
     </div>
 
-    <!-- Historial de evaluaciones -->
+    <!-- Historial -->
     <div id="historial-wrap" style="display:none;">
       <div class="panel-header" style="border-top: 1px solid var(--border);">
         <span class="panel-title">📋 historial de evaluaciones</span>
@@ -262,7 +342,6 @@ SI historial = "malo"
         <table class="token-table" id="historial-tabla"></table>
       </div>
     </div>
-
   </div>
 
 </div>
