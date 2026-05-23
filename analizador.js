@@ -1,7 +1,5 @@
-// ═══════════════════════════════════════════════════════
-//  DEFINICIÓN DEL LENGUAJE — VERSIÓN EXPANDIDA
-// ═══════════════════════════════════════════════════════
 
+//  DEFINICIÓN DEL LENGUAJE 
 const PALABRAS_RESERVADAS = new Set([
   'SI', 'ENTONCES', 'Y', 'O', 'NO',
   'APROBAR', 'RECHAZAR', 'CONDICIONAR',
@@ -19,7 +17,7 @@ const NOMBRE_OP = {
   '>=': 'MAYOR_IGUAL', '<=': 'MENOR_IGUAL',
   '>':  'MAYOR_QUE',   '<':  'MENOR_QUE',
   '=':  'IGUAL',       '!=': 'DIFERENTE',
-  '*': 'MULTIPLICACION, '
+  '*': 'MULTIPLICACION',
 };
 
 const NOMBRE_SYM = {
@@ -48,9 +46,7 @@ const HL_CLASE = {
   DECIMAL: 'hl-dec', ERROR_LEXICO: 'hl-err'
 };
 
-// ═══════════════════════════════════════════════════════
-//  EJEMPLOS PREDEFINIDOS — EXPANDIDOS
-// ═══════════════════════════════════════════════════════
+//  EJEMPLOS PREDEFINIDOS 
 
 const EJEMPLOS = {
   basico: `CAMPO entero ingreso ;
@@ -117,55 +113,50 @@ SI historial = "bueno ENTONCES RECHAZAR ;
 SI 2campo <= 100 ENTONCES CONDICIONAR ;`
 };
 
-// ═══════════════════════════════════════════════════════
-//  SUGERENCIAS DE ERROR — EXPANDIDAS
-// ═══════════════════════════════════════════════════════
-
+//  SUGERENCIAS DE ERROR 
 function obtenerSugerencia(mensaje) {
   const m = mensaje.toLowerCase();
+  const tip = '<span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-right:4px">lightbulb</span>';
   if (m.includes('tipo_dato') || m.includes('entero') && m.includes('texto'))
-    return '💡 Usa <code>entero</code>, <code>decimal</code>, <code>booleano</code>, <code>fecha</code> o <code>texto</code>. Ej: <code>CAMPO decimal ingreso_mensual ;</code>';
+    return `${tip} Usa <code>entero</code>, <code>decimal</code>, <code>booleano</code>, <code>fecha</code> o <code>texto</code>. Ej: <code>CAMPO decimal ingreso_mensual ;</code>`;
   if (m.includes('campo') && m.includes('inicio'))
-    return '💡 El programa debe comenzar con al menos una declaración <code>CAMPO</code>. Ej: <code>CAMPO entero ingreso ;</code>';
+    return `${tip} El programa debe comenzar con al menos una declaración <code>CAMPO</code>. Ej: <code>CAMPO entero ingreso ;</code>`;
   if (m.includes('si') && m.includes('inicio'))
-    return '💡 Después de las declaraciones necesitas al menos una regla. Ej: <code>SI ingreso >= 1000 ENTONCES APROBAR ;</code>';
+    return `${tip} Después de las declaraciones necesitas al menos una regla. Ej: <code>SI ingreso >= 1000 ENTONCES APROBAR ;</code>`;
   if (m.includes('entonces'))
-    return '💡 Después de la condición va la palabra <code>ENTONCES</code>. Ej: <code>SI ingreso >= 5000 ENTONCES APROBAR ;</code>';
+    return `${tip} Después de la condición va la palabra <code>ENTONCES</code>. Ej: <code>SI ingreso >= 5000 ENTONCES APROBAR ;</code>`;
   if (m.includes('aprobar') || m.includes('rechazar') || m.includes('condicionar'))
-    return '💡 Las acciones válidas son: <code>APROBAR</code>, <code>RECHAZAR</code> o <code>CONDICIONAR</code>.';
+    return `${tip} Las acciones válidas son: <code>APROBAR</code>, <code>RECHAZAR</code> o <code>CONDICIONAR</code>.`;
   if (m.includes(';') || m.includes('punto_y_coma'))
-    return '💡 Cada declaración y regla debe terminar con <code>;</code>';
+    return `${tip} Cada declaración y regla debe terminar con <code>;</code>`;
   if (m.includes('operador'))
-    return '💡 Los operadores disponibles son: <code>&gt;=</code> <code>&lt;=</code> <code>&gt;</code> <code>&lt;</code> <code>=</code> <code>!=</code>';
+    return `${tip} Los operadores disponibles son: <code>&gt;=</code> <code>&lt;=</code> <code>&gt;</code> <code>&lt;</code> <code>=</code> <code>!=</code>`;
   if (m.includes('identificador') && m.includes('dígito'))
-    return '💡 Los nombres de campo no pueden iniciar con un número. Usa letras o guión bajo: <code>campo1</code> ✓ — <code>1campo</code> ✗';
+    return `${tip} Los nombres de campo no pueden iniciar con un número. Usa letras o guión bajo: <code>campo1</code> — <code>1campo</code> no válido.`;
   if (m.includes('cadena sin cerrar'))
-    return '💡 Cierra la cadena de texto con comillas dobles. Ej: <code>"bueno"</code>';
+    return `${tip} Cierra la cadena de texto con comillas dobles. Ej: <code>"bueno"</code>`;
   if (m.includes('no fue declarado'))
-    return '💡 Declara el campo antes de usarlo en una regla. Todos los <code>CAMPO</code> van al inicio del programa.';
+    return `${tip} Declara el campo antes de usarlo en una regla. Todos los <code>CAMPO</code> van al inicio del programa.`;
   if (m.includes('fue declarado como entero') && m.includes('texto'))
-    return '💡 Un campo <code>entero</code> solo puede compararse con números.';
+    return `${tip} Un campo <code>entero</code> solo puede compararse con números.`;
   if (m.includes('fue declarado como texto') && m.includes('número'))
-    return '💡 Un campo <code>texto</code> solo puede compararse con cadenas entre comillas.';
+    return `${tip} Un campo <code>texto</code> solo puede compararse con cadenas entre comillas.`;
   if (m.includes('ya fue declarado'))
-    return '💡 Cada campo debe declararse una sola vez.';
+    return `${tip} Cada campo debe declararse una sola vez.`;
   if (m.includes('booleano'))
-    return '💡 Un campo <code>booleano</code> se compara con <code>verdadero</code> o <code>falso</code>. Ej: <code>tiene_garantia = verdadero</code>';
+    return `${tip} Un campo <code>booleano</code> se compara con <code>verdadero</code> o <code>falso</code>. Ej: <code>tiene_garantia = verdadero</code>`;
   if (m.includes('fecha'))
-    return '💡 Las fechas van en formato <code>AAAA-MM-DD</code>. Ej: <code>fecha_nacimiento <= 2000-01-15</code>';
+    return `${tip} Las fechas van en formato <code>AAAA-MM-DD</code>. Ej: <code>fecha_nacimiento <= 2000-01-15</code>`;
   if (m.includes('decimal'))
-    return '💡 Un campo <code>decimal</code> se compara con números con punto decimal. Ej: <code>ingreso >= 5000.00</code>';
+    return `${tip} Un campo <code>decimal</code> se compara con números con punto decimal. Ej: <code>ingreso >= 5000.00</code>`;
   if (m.includes('entre'))
-    return '💡 El operador ENTRE necesita dos valores: <code>SI score ENTRE 600 Y 750 ENTONCES ...</code>';
+    return `${tip} El operador ENTRE necesita dos valores: <code>SI score ENTRE 600 Y 750 ENTONCES ...</code>`;
   if (m.includes('token inesperado'))
-    return '💡 Puede haber un símbolo extra o falta un <code>;</code> en la línea anterior.';
+    return `${tip} Puede haber un símbolo extra o falta un <code>;</code> en la línea anterior.`;
   return null;
 }
 
-// ═══════════════════════════════════════════════════════
-//  TOKENIZADOR — EXPANDIDO
-// ═══════════════════════════════════════════════════════
-
+//  TOKENIZADOR 
 function tokenizar(codigo) {
   const tokens = [];
   const lineas = codigo.split('\n');
@@ -197,7 +188,7 @@ function tokenizar(codigo) {
         continue;
       }
 
-      // Operadores (incluye !=)
+      // Operadores
       let opFound = null;
       for (const op of OPERADORES) {
         if (linea.startsWith(op, i)) { opFound = op; break; }
@@ -213,7 +204,7 @@ function tokenizar(codigo) {
         i++; continue;
       }
 
-      // Números: decimal (con punto) o entero, o error si inicia con dígito
+      // Números
       if (/[0-9]/.test(linea[i])) {
         let j = i;
         while (j < linea.length && /[0-9]/.test(linea[j])) j++;
@@ -279,11 +270,7 @@ function tokenizar(codigo) {
   }
   return tokens;
 }
-
-// ═══════════════════════════════════════════════════════
 //  HELPERS
-// ═══════════════════════════════════════════════════════
-
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -292,9 +279,7 @@ function cnt(tokens, tipo) {
   return tokens.filter(t => t.tipo === tipo).length;
 }
 
-// ═══════════════════════════════════════════════════════
 //  SYNTAX HIGHLIGHT
-// ═══════════════════════════════════════════════════════
 
 function buildHighlight(codigo, tokens) {
   const lineas = codigo.split('\n');
@@ -321,9 +306,7 @@ function buildHighlight(codigo, tokens) {
   }).join('\n');
 }
 
-// ═══════════════════════════════════════════════════════
 //  RENDER LÉXICO
-// ═══════════════════════════════════════════════════════
 
 function renderLexico(tokens, codigo) {
   const errCount = cnt(tokens, 'ERROR_LEXICO');
@@ -379,9 +362,7 @@ function renderLexico(tokens, codigo) {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-//  FASE 2 — ANALIZADOR SINTÁCTICO EXPANDIDO
-// ═══════════════════════════════════════════════════════
+//  FASE 2 — ANALIZADOR SINTÁCTICO
 
 class AnalizadorSintactico {
   constructor(tokens) {
@@ -574,10 +555,7 @@ class AnalizadorSintactico {
     return n;
   }
 }
-
-// ═══════════════════════════════════════════════════════
 //  RENDER ÁRBOL
-// ═══════════════════════════════════════════════════════
 
 function renderArbol(nodo, prefijo, esUltimo) {
   const conector  = esUltimo ? '└── ' : '├── ';
@@ -603,9 +581,7 @@ function arbolATexto(raiz) {
   return lineas.join('\n');
 }
 
-// ═══════════════════════════════════════════════════════
 //  RENDER SINTÁCTICO
-// ═══════════════════════════════════════════════════════
 
 function renderSintactico(tokens) {
   const errLex = cnt(tokens, 'ERROR_LEXICO');
@@ -615,9 +591,9 @@ function renderSintactico(tokens) {
 
   if (errLex > 0) {
     sintEl.innerHTML = `
-      <div class="sint-badge sint-warn">⚠ Análisis sintáctico no ejecutado</div>
+      <div class="sint-badge sint-warn"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">warning</span> Análisis sintáctico no ejecutado</div>
       <p class="sint-msg">Corrija los <strong>${errLex} error${errLex>1?'es':''} léxico${errLex>1?'s':''}</strong> antes de continuar.</p>
-      <div class="sugerencia">💡 Revisa los tokens marcados en rojo en el panel de resaltado.</div>`;
+      <div class="sugerencia"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-right:4px">lightbulb</span> Revisa los tokens marcados en rojo en el panel de resaltado.</div>`;
     arbolWrap.style.display = 'none';
     return null;
   }
@@ -625,14 +601,14 @@ function renderSintactico(tokens) {
   try {
     const parser = new AnalizadorSintactico(tokens);
     const arbol  = parser.parsePrograma();
-    sintEl.innerHTML = `<div class="sint-badge sint-ok">✓ Cadena aceptada — programa sintácticamente válido</div>`;
+    sintEl.innerHTML = `<div class="sint-badge sint-ok"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">check_circle</span> Cadena aceptada — programa sintácticamente válido</div>`;
     arbolPre.innerHTML = arbolATexto(arbol);
     arbolWrap.style.display = 'block';
     return arbol;
   } catch (e) {
     const sug = obtenerSugerencia(e.message);
     sintEl.innerHTML = `
-      <div class="sint-badge sint-err">✗ Error sintáctico</div>
+      <div class="sint-badge sint-err"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">cancel</span> Error sintáctico</div>
       <p class="sint-err-msg">${esc(e.message)}</p>
       ${sug ? `<div class="sugerencia">${sug}</div>` : ''}`;
     arbolWrap.style.display = 'none';
@@ -640,9 +616,7 @@ function renderSintactico(tokens) {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-//  FASE 3 — ANALIZADOR SEMÁNTICO EXPANDIDO
-// ═══════════════════════════════════════════════════════
+//  FASE 3 — ANALIZADOR SEMÁNTICO
 
 class AnalizadorSemantico {
   constructor() {
@@ -690,11 +664,11 @@ class AnalizadorSemantico {
     if (reglas) this.recogerCamposUsados(reglas, usados);
     for (const nombre of Object.keys(this.tabla)) {
       if (!usados.has(nombre)) {
-        this.warn(`⚠ El campo '${nombre}' está declarado pero no se usa en ninguna regla.`);
+        this.warn(`El campo '${nombre}' está declarado pero no se usa en ninguna regla.`);
       }
     }
 
-    this.log('✓ Análisis semántico completado' +
+    this.log('Análisis semántico completado' +
       (this.advertencias.length > 0 ? ` con ${this.advertencias.length} advertencia(s).` : ' sin errores.'));
     return this.tabla;
   }
@@ -774,9 +748,7 @@ class AnalizadorSemantico {
   }
 }
 
-// ═══════════════════════════════════════════════════════
 //  RENDER SEMÁNTICO
-// ═══════════════════════════════════════════════════════
 
 let _tablaSimbolos = null;
 let _arbolPrograma = null;
@@ -792,7 +764,7 @@ function renderSemantico(arbol) {
 
   if (!arbol) {
     semEl.innerHTML = `
-      <div class="sint-badge sint-warn">⚠ Análisis semántico no ejecutado</div>
+      <div class="sint-badge sint-warn"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">warning</span> Análisis semántico no ejecutado</div>
       <p class="sint-msg">Requiere que las fases léxica y sintáctica sean exitosas.</p>`;
     tablaWrap.style.display = 'none';
     simPanel.style.display  = 'none';
@@ -811,7 +783,7 @@ function renderSemantico(arbol) {
       : '';
 
     semEl.innerHTML = `
-      <div class="sint-badge sint-ok">✓ Programa semánticamente válido</div>
+      <div class="sint-badge sint-ok"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">check_circle</span> Programa semánticamente válido</div>
       <div class="sem-log">${logHtml}</div>
       ${warnHtml}`;
 
@@ -841,17 +813,14 @@ function renderSemantico(arbol) {
   } catch (e) {
     const sug = obtenerSugerencia(e.message);
     semEl.innerHTML = `
-      <div class="sint-badge sint-err">✗ Error semántico</div>
+      <div class="sint-badge sint-err"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">cancel</span> Error semántico</div>
       <p class="sint-err-msg">${esc(e.message)}</p>
       ${sug ? `<div class="sugerencia">${sug}</div>` : ''}`;
     tablaWrap.style.display = 'none';
     simPanel.style.display  = 'none';
   }
 }
-
-// ═══════════════════════════════════════════════════════
 //  SIMULADOR — FORMULARIO DINÁMICO
-// ═══════════════════════════════════════════════════════
 
 let _historial = [];
 let _ultimoResultado = null;
@@ -860,6 +829,7 @@ function construirFormularioSimulador(tabla) {
   const form = document.getElementById('sim-form');
   const entradas = Object.values(tabla);
   document.getElementById('sim-resultado-wrap').style.display = 'none';
+  document.getElementById('sim-btn-row').style.display = 'flex';
 
   const placeholders = {
     entero:   { ph: 'Ej: 5000',        hint: 'Número entero' },
@@ -870,7 +840,7 @@ function construirFormularioSimulador(tabla) {
   };
 
   let html = `
-    <div class="sim-section-title">👤 Datos del Solicitante</div>
+    <div class="sim-section-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:6px">person</span> Datos del Solicitante</div>
     <div class="sim-fields-grid">
       <div class="sim-field">
         <label class="sim-label"><span class="sim-field-name">Nombre Completo</span></label>
@@ -882,7 +852,7 @@ function construirFormularioSimulador(tabla) {
       </div>
     </div>
     <div class="sim-divider"></div>
-    <div class="sim-section-title">📋 Datos para Evaluación</div>
+    <div class="sim-section-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:6px">assignment</span> Datos para Evaluación</div>
     <div class="sim-fields-grid">`;
 
   entradas.forEach(e => {
@@ -894,8 +864,8 @@ function construirFormularioSimulador(tabla) {
     if (e.tipo === 'booleano') {
       inputHtml = `<select class="sim-input sim-select" id="sim-${esc(e.nombre)}">
         <option value="">— Selecciona —</option>
-        <option value="verdadero">✅ verdadero</option>
-        <option value="falso">❌ falso</option>
+        <option value="verdadero">Verdadero</option>
+        <option value="falso">Falso</option>
       </select>`;
     } else if (e.tipo === 'fecha') {
       inputHtml = `<input class="sim-input" type="date" id="sim-${esc(e.nombre)}" />`;
@@ -939,7 +909,7 @@ function obtenerValoresSolicitud() {
 
     if (e.tipo === 'entero') {
       const num = Number(raw);
-      if (isNaN(num)) throw new Error(`"${e.nombre}" debe ser entero.`);
+      if (isNaN(num) || !Number.isInteger(num)) throw new Error(`"${e.nombre}" debe ser un número entero.`);
       valores[e.nombre] = num;
     } else if (e.tipo === 'decimal') {
       const num = parseFloat(raw);
@@ -948,8 +918,7 @@ function obtenerValoresSolicitud() {
     } else if (e.tipo === 'booleano') {
       valores[e.nombre] = raw.toLowerCase() === 'verdadero';
     } else if (e.tipo === 'fecha') {
-      // Normaliza input date (YYYY-MM-DD) a número comparable
-      valores[e.nombre] = raw; // string YYYY-MM-DD, comparable lexicográficamente
+      valores[e.nombre] = raw; 
     } else {
       valores[e.nombre] = raw.replace(/^"|"$/g, '').toLowerCase();
     }
@@ -957,9 +926,30 @@ function obtenerValoresSolicitud() {
   return valores;
 }
 
-// ═══════════════════════════════════════════════════════
-//  MOTOR DE EVALUACIÓN CON TRAZABILIDAD COMPLETA
-// ═══════════════════════════════════════════════════════
+function reiniciarSimulador() {
+  const nombreInput = document.getElementById('sim-solicitante-nombre');
+  const dpiInput = document.getElementById('sim-solicitante-dpi');
+  if (nombreInput) nombreInput.value = '';
+  if (dpiInput) dpiInput.value = '';
+
+  if (_tablaSimbolos) {
+    for (const e of Object.values(_tablaSimbolos)) {
+      const input = document.getElementById(`sim-${e.nombre}`);
+      if (input) input.value = '';
+    }
+  }
+
+  const resultWrap = document.getElementById('sim-resultado-wrap');
+  if (resultWrap) resultWrap.style.display = 'none';
+  
+  const resultEl = document.getElementById('sim-resultado');
+  if (resultEl) resultEl.innerHTML = '';
+  
+  const detalleEl = document.getElementById('sim-detalle');
+  if (detalleEl) detalleEl.innerHTML = '';
+}
+
+//  MOTOR DE EVALUACIÓN 
 
 function evaluarCondicionConTraza(nodoCondicion, valores) {
   if (!nodoCondicion || !nodoCondicion.hijos) return { resultado: false, traza: [] };
@@ -1067,10 +1057,7 @@ function evaluarRangoConTraza(nodoComp, valores) {
     }]
   };
 }
-
-// ═══════════════════════════════════════════════════════
-//  GENERADOR DE EXPLICACIONES EN LENGUAJE NATURAL
-// ═══════════════════════════════════════════════════════
+//  GENERADOR DE EXPLICACIONES 
 
 function formatearValor(val, tipo) {
   if (tipo === 'decimal') return Number(val).toLocaleString('es-GT', { minimumFractionDigits: 2 });
@@ -1083,7 +1070,7 @@ function explicarTraza(traza, nivel = 0) {
   const lineas = [];
   for (const t of traza) {
     if (t.tipo === 'CMP') {
-      const icon = t.resultado ? '✅' : '❌';
+      const icon = t.resultado ? '<span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">cancel</span>';
       const fval = formatearValor(t.valorCampo, t.tipoCampo);
       const fcmp = formatearValor(t.valorComparar, t.tipoCampo);
       const nombreCampo = t.campo.replace(/_/g,' ');
@@ -1099,7 +1086,7 @@ function explicarTraza(traza, nivel = 0) {
         operador: t.operador, diferencia: t.diferencia, tipoCampo: t.tipoCampo });
     }
     if (t.tipo === 'RANGO') {
-      const icon = t.resultado ? '✅' : '❌';
+      const icon = t.resultado ? '<span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">cancel</span>';
       const fval = formatearValor(t.valorCampo, t.tipoCampo);
       const nombreCampo = t.campo.replace(/_/g,' ');
       const texto = t.resultado
@@ -1144,9 +1131,7 @@ function generarExplicacionFallo(t, fval, fcmp, nombreCampo) {
   return `<strong>${nombreCampo}</strong> ${ops[t.operador] || `no cumple la condición (${t.operador} ${fcmp})`}`;
 }
 
-// ═══════════════════════════════════════════════════════
 //  ANÁLISIS DE REGLAS NO APLICADAS
-// ═══════════════════════════════════════════════════════
 
 function analizarReglasNoAplicadas(nodoReglas, valores, reglaAplicadaIdx) {
   const detalle = [];
@@ -1174,12 +1159,10 @@ function analizarReglasNoAplicadas(nodoReglas, valores, reglaAplicadaIdx) {
   return detalle;
 }
 
-// ═══════════════════════════════════════════════════════
 //  RENDER DE TABLA DE REGLAS EVALUADAS
-// ═══════════════════════════════════════════════════════
 
 function renderTablaReglas(detalle) {
-  const iconAccion = { APROBAR: '✅', RECHAZAR: '❌', CONDICIONAR: '🟡' };
+  const iconAccion = { APROBAR: '<span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">check_circle</span>', RECHAZAR: '<span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">cancel</span>', CONDICIONAR: '<span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">warning</span>' };
   const claseAccion = { APROBAR: 'badge-apr', RECHAZAR: 'badge-rec', CONDICIONAR: 'badge-con' };
 
   let html = `<div class="reglas-tabla-wrap">
@@ -1200,7 +1183,7 @@ function renderTablaReglas(detalle) {
       <td class="col-n">${r.numero}${r.prioridad ? `<br><span style="font-size:0.7rem;color:var(--text-dim)">P${r.prioridad}</span>` : ''}</td>
       <td><code class="regla-mini">${esc(r.texto)}</code></td>
       <td><span class="eval-badge ${claseAccion[r.accion]||''}">${iconAccion[r.accion]||''} ${r.accion}</span></td>
-      <td class="col-cumplida">${r.cumplida ? '✅ Sí' : '❌ No'}</td>
+      <td class="col-cumplida">${r.cumplida ? 'Sí' : 'No'}</td>
       <td>${estadoHtml}</td>
     </tr>`;
   });
@@ -1208,9 +1191,7 @@ function renderTablaReglas(detalle) {
   return html;
 }
 
-// ═══════════════════════════════════════════════════════
 //  RENDER DE EXPLICACIÓN DETALLADA
-// ═══════════════════════════════════════════════════════
 
 function renderExplicacionDetallada(accion, detalle, reglaAplicada) {
   const mensajesBase = {
@@ -1222,7 +1203,7 @@ function renderExplicacionDetallada(accion, detalle, reglaAplicada) {
   // Explicación de la regla aplicada
   const reglaDet = detalle.find(r => r.esAplicada);
   let html = `<div class="exp-seccion">
-    <div class="exp-titulo">📌 Motivo del resultado</div>
+    <div class="exp-titulo"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px">push_pin</span> Motivo del resultado</div>
     <p class="exp-intro">${mensajesBase[accion] || 'Se aplicó la siguiente regla:'}</p>
     <code class="exp-regla-codigo">${esc(reglaDet?.texto || '')}</code>
   </div>`;
@@ -1230,7 +1211,7 @@ function renderExplicacionDetallada(accion, detalle, reglaAplicada) {
   // Desglose condición por condición
   if (reglaDet && reglaDet.trazaLineas.length > 0) {
     html += `<div class="exp-seccion">
-      <div class="exp-titulo">🔍 Desglose de condiciones cumplidas</div>
+      <div class="exp-titulo"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px">manage_search</span> Desglose de condiciones</div>
       <div class="exp-condiciones">`;
     for (const linea of reglaDet.trazaLineas) {
       html += `<div class="exp-cond-item exp-cond-${linea.resultado ? 'ok' : 'fail'}">
@@ -1245,7 +1226,7 @@ function renderExplicacionDetallada(accion, detalle, reglaAplicada) {
   const noAplicadas = detalle.filter(r => !r.esAplicada && !r.cumplida);
   if (noAplicadas.length > 0) {
     html += `<div class="exp-seccion">
-      <div class="exp-titulo">⚡ Por qué no aplicaron otras reglas</div>`;
+      <div class="exp-titulo"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px">rule</span> Por qué no aplicaron otras reglas</div>`;
     for (const r of noAplicadas) {
       const fallidas = r.trazaLineas.filter(l => !l.resultado);
       if (fallidas.length === 0) continue;
@@ -1255,8 +1236,8 @@ function renderExplicacionDetallada(accion, detalle, reglaAplicada) {
         </div>`;
       for (const f of fallidas) {
         html += `<div class="exp-cond-item exp-cond-fail">
-          <span class="exp-cond-icon">❌</span>
-          <span class="exp-cond-texto">${f.texto}</span>
+        <span class="exp-cond-icon"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">cancel</span></span>
+        <span class="exp-cond-texto">${f.texto}</span>
         </div>`;
       }
       html += `</div>`;
@@ -1269,7 +1250,7 @@ function renderExplicacionDetallada(accion, detalle, reglaAplicada) {
     const recomendaciones = generarRecomendaciones(detalle, accion);
     if (recomendaciones.length > 0) {
       html += `<div class="exp-seccion exp-recom">
-        <div class="exp-titulo">💡 Recomendaciones para mejorar el perfil</div>
+        <div class="exp-titulo"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px">lightbulb</span> Recomendaciones para mejorar el perfil</div>
         <ul class="exp-recom-lista">`;
       for (const rec of recomendaciones) {
         html += `<li class="exp-recom-item">${rec}</li>`;
@@ -1303,9 +1284,7 @@ function generarRecomendaciones(detalle, accion) {
   return [...new Set(recs)].slice(0, 4);
 }
 
-// ═══════════════════════════════════════════════════════
 //  EVALUACIÓN PRINCIPAL
-// ═══════════════════════════════════════════════════════
 
 function reconstruirTextoRegla(nodoRegla) {
   const hojas = [];
@@ -1321,6 +1300,7 @@ function evaluarSolicitud() {
   const resultWrap = document.getElementById('sim-resultado-wrap');
   const resultEl   = document.getElementById('sim-resultado');
   const detalleEl  = document.getElementById('sim-detalle');
+  const loaderWrap = document.getElementById('sim-loader-wrap');
 
   try {
     const solicitante = obtenerDatosSolicitante();
@@ -1329,100 +1309,116 @@ function evaluarSolicitud() {
     const nodoReglas = _arbolPrograma.hijos.find(h => h.nombre === 'REGLAS');
     if (!nodoReglas) throw new Error('No hay reglas para evaluar.');
 
-    // Encontrar regla aplicada
-    let accionFinal       = null;
-    let reglaAplicadaIdx  = -1;
-    let reglaAplicadaTxt  = '';
-
-    nodoReglas.hijos.forEach((regla, idx) => {
-      if (accionFinal !== null) return;
-      const nodoCondicion = regla.hijos.find(h => h.nombre === 'CONDICION');
-      const nodoAccion    = regla.hijos.find(h => h.nombre === 'ACCION');
-      if (!nodoCondicion || !nodoAccion) return;
-      const { resultado } = evaluarCondicionConTraza(nodoCondicion, valores);
-      if (resultado) {
-        accionFinal      = nodoAccion.hijos[0].nombre.toUpperCase();
-        reglaAplicadaIdx = idx;
-        reglaAplicadaTxt = reconstruirTextoRegla(regla);
-      }
-    });
-
-    // Análisis completo de todas las reglas
-    const detalleReglas = analizarReglasNoAplicadas(nodoReglas, valores, reglaAplicadaIdx);
-
-    resultWrap.style.display = 'block';
-    resultWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    const ahora    = new Date();
-    const fechaStr = ahora.toLocaleDateString('es-GT', { day:'2-digit', month:'long', year:'numeric' });
-    const horaStr  = ahora.toLocaleTimeString('es-GT', { hour:'2-digit', minute:'2-digit' });
-    const folio    = 'SOL-' + Date.now().toString().slice(-6);
-
-    const iconos   = { APROBAR: '✅', RECHAZAR: '❌', CONDICIONAR: '🟡' };
-    const clases   = { APROBAR: 'sim-res-aprobar', RECHAZAR: 'sim-res-rechazar', CONDICIONAR: 'sim-res-condicionar' };
-
-    if (!accionFinal) {
-      resultEl.innerHTML = `<div class="sim-res sim-res-ninguna">⚪ Ninguna regla aplicó</div>`;
-      detalleEl.innerHTML = `
-        <p class="sim-detalle-txt">Ninguna de las reglas definidas se cumplió con los datos ingresados.</p>
-        <div class="exp-seccion">
-          <div class="exp-titulo">📋 Evaluación de todas las reglas</div>
-          ${renderTablaReglas(detalleReglas)}
-        </div>`;
-      agregarHistorial({ solicitante, accion: 'SIN RESULTADO', folio, fechaStr, horaStr });
-      return;
+    resultWrap.style.display = 'none';
+    if (loaderWrap) {
+      loaderWrap.style.display = 'flex';
+      loaderWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    resultEl.innerHTML = `
-      <div class="sim-res ${clases[accionFinal]}">
-        <span class="sim-res-icon">${iconos[accionFinal]}</span>
-        <span class="sim-res-text">${accionFinal}</span>
-      </div>`;
+    setTimeout(() => {
+      try {
+        if (loaderWrap) loaderWrap.style.display = 'none';
 
-    const datosHtml = Object.entries(valores).map(([k, v]) => {
-      const tipo = _tablaSimbolos[k]?.tipo || 'texto';
-      return `<span class="sim-dato-chip"><b>${k.replace(/_/g,' ')}</b>: ${formatearValor(v, tipo)}</span>`;
-    }).join('');
+        // Encontrar regla aplicada
+        let accionFinal       = null;
+        let reglaAplicadaIdx  = -1;
+        let reglaAplicadaTxt  = '';
 
-    detalleEl.innerHTML = `
-      <div class="sim-folio">Folio: <strong>${folio}</strong> &nbsp;·&nbsp; ${fechaStr} ${horaStr}</div>
-      <div class="sim-solicitante-info">
-        <span>👤 <strong>${esc(solicitante.nombre)}</strong></span>
-        <span>🪪 DPI: ${esc(solicitante.dpi)}</span>
-      </div>
-      <div class="sim-datos-evaluados">${datosHtml}</div>
+        nodoReglas.hijos.forEach((regla, idx) => {
+          if (accionFinal !== null) return;
+          const nodoCondicion = regla.hijos.find(h => h.nombre === 'CONDICION');
+          const nodoAccion    = regla.hijos.find(h => h.nombre === 'ACCION');
+          if (!nodoCondicion || !nodoAccion) return;
+          const { resultado } = evaluarCondicionConTraza(nodoCondicion, valores);
+          if (resultado) {
+            accionFinal      = nodoAccion.hijos[0].nombre.toUpperCase();
+            reglaAplicadaIdx = idx;
+            reglaAplicadaTxt = reconstruirTextoRegla(regla);
+          }
+        });
 
-      <!-- Explicación inteligente -->
-      <div class="exp-panel">
-        ${renderExplicacionDetallada(accionFinal, detalleReglas, reglaAplicadaTxt)}
-      </div>
+        // Análisis completo de todas las reglas
+        const detalleReglas = analizarReglasNoAplicadas(nodoReglas, valores, reglaAplicadaIdx);
 
-      <!-- Tabla de todas las reglas evaluadas -->
-      <div class="exp-seccion">
-        <div class="exp-titulo">📋 Evaluación de todas las reglas</div>
-        ${renderTablaReglas(detalleReglas)}
-      </div>
+        resultWrap.style.display = 'block';
+        resultWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-      <div class="sim-pdf-row">
-        <button class="btn btn-pdf" onclick="generarPDF()">⬇ Descargar dictamen PDF</button>
-      </div>`;
+        const ahora    = new Date();
+        const fechaStr = ahora.toLocaleDateString('es-GT', { day:'2-digit', month:'long', year:'numeric' });
+        const horaStr  = ahora.toLocaleTimeString('es-GT', { hour:'2-digit', minute:'2-digit' });
+        const folio    = 'SOL-' + Date.now().toString().slice(-6);
 
-    _ultimoResultado = { folio, nombre: solicitante.nombre, dpi: solicitante.dpi,
-      accion: accionFinal, regla: reglaAplicadaTxt, fecha: fechaStr, hora: horaStr,
-      valores, detalleReglas };
+        const iconos   = { APROBAR: 'check_circle', RECHAZAR: 'cancel', CONDICIONAR: 'warning' };
+        const clases   = { APROBAR: 'sim-res-aprobar', RECHAZAR: 'sim-res-rechazar', CONDICIONAR: 'sim-res-condicionar' };
 
-    agregarHistorial({ solicitante, accion: accionFinal, folio, fechaStr, horaStr, regla: reglaAplicadaTxt });
+        if (!accionFinal) {
+          resultEl.innerHTML = `<div class="sim-res sim-res-ninguna"><span class="material-symbols-outlined" style="font-size:24px;vertical-align:middle;">remove_circle_outline</span> Ninguna regla aplicó</div>`;
+          detalleEl.innerHTML = `
+            <p class="sim-detalle-txt">Ninguna de las reglas definidas se cumplió con los datos ingresados.</p>
+            <div class="exp-seccion">
+              <div class="exp-titulo"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px">fact_check</span> Evaluación de todas las reglas</div>
+              ${renderTablaReglas(detalleReglas)}
+            </div>`;
+          agregarHistorial({ solicitante, accion: 'SIN RESULTADO', folio, fechaStr, horaStr });
+          return;
+        }
+
+        resultEl.innerHTML = `
+          <div class="sim-res ${clases[accionFinal]}">
+            <span class="material-symbols-outlined sim-res-icon" style="font-size:32px;">${iconos[accionFinal]}</span>
+            <span class="sim-res-text">${accionFinal}</span>
+          </div>`;
+
+        const datosHtml = Object.entries(valores).map(([k, v]) => {
+          const tipo = _tablaSimbolos[k]?.tipo || 'texto';
+          return `<span class="sim-dato-chip"><b>${k.replace(/_/g,' ')}</b>: ${formatearValor(v, tipo)}</span>`;
+        }).join('');
+
+        detalleEl.innerHTML = `
+          <div class="sim-folio">Folio: <strong>${folio}</strong> &nbsp;·&nbsp; ${fechaStr} ${horaStr}</div>
+          <div class="sim-solicitante-info">
+            <span><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">person</span> <strong>${esc(solicitante.nombre)}</strong></span>
+            <span><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">badge</span> DPI: ${esc(solicitante.dpi)}</span>
+          </div>
+          <div class="sim-datos-evaluados">${datosHtml}</div>
+
+          <!-- Explicación inteligente -->
+          <div class="exp-panel">
+            ${renderExplicacionDetallada(accionFinal, detalleReglas, reglaAplicadaTxt)}
+          </div>
+
+          <!-- Tabla de todas las reglas evaluadas -->
+            <div class="exp-seccion">
+            <div class="exp-titulo"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px">fact_check</span> Evaluación de todas las reglas</div>
+            ${renderTablaReglas(detalleReglas)}
+          </div>
+
+          <div class="sim-pdf-row">
+            <button class="btn btn-pdf" onclick="generarPDF()"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle">download</span> Descargar dictamen PDF</button>
+          </div>`;
+
+        _ultimoResultado = { folio, nombre: solicitante.nombre, dpi: solicitante.dpi,
+          accion: accionFinal, regla: reglaAplicadaTxt, fecha: fechaStr, hora: horaStr,
+          valores, detalleReglas };
+
+        agregarHistorial({ solicitante, accion: accionFinal, folio, fechaStr, horaStr, regla: reglaAplicadaTxt });
+
+      } catch (err) {
+        if (loaderWrap) loaderWrap.style.display = 'none';
+        resultWrap.style.display = 'block';
+        resultEl.innerHTML = `<div class="sim-res sim-res-err"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle">error</span> ${esc(err.message)}</div>`;
+        detalleEl.innerHTML = '';
+      }
+    }, 700);
 
   } catch (e) {
+    if (loaderWrap) loaderWrap.style.display = 'none';
     resultWrap.style.display = 'block';
-    resultEl.innerHTML = `<div class="sim-res sim-res-err">⚠ ${esc(e.message)}</div>`;
+    resultEl.innerHTML = `<div class="sim-res sim-res-err"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle">error</span> ${esc(e.message)}</div>`;
     detalleEl.innerHTML = '';
   }
 }
-
-// ═══════════════════════════════════════════════════════
 //  HISTORIAL
-// ═══════════════════════════════════════════════════════
 
 function agregarHistorial(entry) {
   _historial.unshift(entry);
@@ -1454,90 +1450,140 @@ function renderHistorial() {
   el.innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════
 //  PDF
-// ═══════════════════════════════════════════════════════
-
 function generarPDF() {
   if (!_ultimoResultado) return;
   const { folio, nombre, dpi, accion, regla, fecha, hora, valores, detalleReglas } = _ultimoResultado;
   const colores  = { APROBAR:'#1a6b3a', RECHAZAR:'#9B2C2C', CONDICIONAR:'#7B4F00' };
   const fondos   = { APROBAR:'#F0FFF4', RECHAZAR:'#FFF5F5', CONDICIONAR:'#FFFBEB' };
-  const iconos   = { APROBAR:'✅ APROBADO', RECHAZAR:'❌ RECHAZADO', CONDICIONAR:'🟡 CONDICIONADO' };
+  const labelAccion = { APROBAR: 'APROBADO', RECHAZAR: 'RECHAZADO', CONDICIONAR: 'CONDICIONADO' };
   const color    = colores[accion] || '#333';
   const fondo    = fondos[accion]  || '#fff';
 
   const datosRows = Object.entries(valores).map(([k, v]) => {
     const tipo = _tablaSimbolos[k]?.tipo || 'texto';
-    return `<tr><td style="padding:6px 12px;color:#555;font-size:13px;text-transform:capitalize">${k.replace(/_/g,' ')}</td><td style="padding:6px 12px;font-weight:600;font-size:13px;">${formatearValor(v, tipo)}</td></tr>`;
+    const label = k.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+    return `<tr><th>${label}</th><td>${formatearValor(v, tipo)}</td></tr>`;
   }).join('');
 
   // Desglose de condiciones en PDF
   const reglaDet = detalleReglas?.find(r => r.esAplicada);
-  const condRows = reglaDet?.trazaLineas?.map(l =>
-    `<tr><td style="padding:5px 10px;font-size:12px">${l.icon}</td><td style="padding:5px 10px;font-size:12px" colspan="2">${l.texto.replace(/<[^>]+>/g,'')}</td></tr>`
-  ).join('') || '';
+  const condRows = reglaDet?.trazaLineas?.map(l => {
+    const estado = l.resultado ? '[OK]' : '[NO]';
+    return `<tr><td style="font-weight:bold;color:${l.resultado ? '#1a6b3a' : '#9B2C2C'};width:40px">${estado}</td><td>${l.texto.replace(/<[^>]+>/g,'')}</td></tr>`;
+  }).join('') || '';
 
   // Reglas no cumplidas
   const noAplRows = detalleReglas?.filter(r => !r.esAplicada && !r.cumplida).map(r => {
     const fallidas = r.trazaLineas.filter(l => !l.resultado);
     return fallidas.map(f =>
-      `<tr><td style="padding:4px 10px;font-size:11px;color:#c00">❌</td><td style="padding:4px 10px;font-size:11px;color:#555" colspan="2">${f.texto.replace(/<[^>]+>/g,'')}</td></tr>`
+      `<tr><td style="font-weight:bold;color:#9B2C2C;width:40px">[NO]</td><td>${f.texto.replace(/<[^>]+>/g,'')}</td></tr>`
     ).join('');
   }).join('') || '';
 
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <style>
-body{font-family:Arial,sans-serif;margin:0;padding:0;color:#222}
-.hdr{background:#0d1b2a;color:white;padding:28px 40px;display:flex;align-items:center;justify-content:space-between}
-.hdr-t{font-size:20px;font-weight:800}.hdr-s{font-size:11px;opacity:.7;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
-.hdr-f{text-align:right;font-size:11px;opacity:.6}.hdr-f strong{display:block;font-size:15px;opacity:1;font-family:monospace}
-.body{padding:36px 40px}
-.sec{margin-bottom:20px}
-.sec-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:5px}
-.res-box{background:${fondo};border:2px solid ${color};border-radius:10px;padding:20px 28px;margin:20px 0}
-.res-txt{font-size:26px;font-weight:900;color:${color};letter-spacing:2px}
-table{width:100%;border-collapse:collapse}
-table tr:nth-child(even) td{background:#f9f9f9}
-.regla{background:#f0fffe;border-left:4px solid #00b894;padding:10px 14px;border-radius:0 6px 6px 0;font-family:monospace;font-size:12px;color:#0d4f3c;margin-top:6px}
-.footer{margin-top:40px;border-top:1px solid #eee;padding-top:18px;display:flex;justify-content:space-between;align-items:flex-end}
-.nota{font-size:10px;color:#aaa;max-width:280px;line-height:1.5}
-.sello-linea{width:180px;border-top:1px solid #333;margin:0 auto 4px}
-.sello-txt{font-size:11px;color:#666;text-align:center}
-@media print{body{-webkit-print-color-adjust:exact}}
+body { font-family: 'Times New Roman', Times, serif; margin: 0; padding: 0; color: #111; background: #fff; }
+.page { max-width: 800px; margin: 0 auto; padding: 40px; background: white; }
+.hdr { border-bottom: 3px solid #0f52ba; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+.hdr-logo { font-size: 24px; font-weight: bold; color: #0f52ba; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; }
+.hdr-logo-sub { font-size: 10px; color: #555; letter-spacing: 2px; }
+.hdr-f { text-align: right; font-size: 12px; color: #333; font-family: Arial, sans-serif; }
+.hdr-f strong { display: block; font-size: 14px; margin-bottom: 4px; }
+h1 { text-align: center; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+.sec { margin-bottom: 25px; }
+.sec-title { font-size: 14px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; background: #f4f4f4; padding: 5px 10px; border-left: 4px solid #0f52ba; font-family: Arial, sans-serif; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; font-family: Arial, sans-serif; }
+table th, table td { padding: 8px 12px; border: 1px solid #ddd; text-align: left; text-transform: none; }
+table th { background: #fafafa; font-weight: bold; width: 40%; font-size: 12px; color: #444; text-transform: none; }
+.res-box { text-align: center; border: 2px solid #0f52ba; padding: 20px; margin: 20px 0; background: #f8fbff; }
+.res-txt { font-size: 22px; font-weight: bold; color: #0f52ba; text-transform: uppercase; font-family: Arial, sans-serif; letter-spacing: 1px; }
+.res-sub { font-size: 12px; color: #555; margin-top: 5px; font-family: Arial, sans-serif; }
+.regla { font-family: 'Courier New', Courier, monospace; background: #f9f9f9; padding: 12px; border: 1px solid #ccc; font-size: 12px; color: #333; }
+.footer { margin-top: 60px; padding-top: 20px; font-size: 11px; text-align: justify; color: #555; border-top: 1px solid #ccc; font-family: Arial, sans-serif; line-height: 1.5; }
+.signatures { display: flex; justify-content: space-around; margin-top: 60px; margin-bottom: 30px; }
+.sig-box { text-align: center; width: 40%; }
+.sig-line { border-top: 1px solid #000; margin-bottom: 5px; }
+.sig-name { font-weight: bold; font-size: 12px; font-family: Arial, sans-serif; color: #111; }
+.sig-title { font-size: 11px; color: #555; font-family: Arial, sans-serif; }
+@media print{ body{background:#fff;} .page{padding:0;} }
 </style></head><body>
-<div class="hdr">
-  <div><div class="hdr-t">Sistema de Evaluación de Crédito</div><div class="hdr-s">Dictamen Automático de Solicitud</div></div>
-  <div class="hdr-f">Folio<strong>${folio}</strong>${fecha} · ${hora}</div>
-</div>
-<div class="body">
-  <div class="sec"><div class="sec-label">Solicitante</div>
-    <table><tr><td style="padding:6px 12px;color:#555;font-size:13px">Nombre</td><td style="padding:6px 12px;font-weight:600;font-size:14px">${nombre}</td></tr>
-    <tr><td style="padding:6px 12px;color:#555;font-size:13px">DPI</td><td style="padding:6px 12px;font-weight:600;font-size:14px">${dpi}</td></tr></table>
+<div class="page">
+  <div class="hdr">
+    <div>
+      <div class="hdr-logo">Banco Central</div>
+      <div class="hdr-logo-sub">DEPARTAMENTO DE RIESGO CREDITICIO</div>
+    </div>
+    <div class="hdr-f">
+      <strong>Folio: ${folio}</strong>
+      Fecha: ${fecha} - ${hora}
+    </div>
   </div>
-  <div class="sec"><div class="sec-label">Resultado</div>
-    <div class="res-box"><div class="res-txt">${iconos[accion]||accion}</div><div style="font-size:12px;color:#555;margin-top:4px">Determinado automáticamente por el motor de reglas</div></div>
+  
+  <h1>Dictamen Oficial de Solicitud de Crédito</h1>
+
+  <div class="sec">
+    <div class="sec-title">I. Datos del Solicitante</div>
+    <table>
+      <tr><th>Nombre Completo</th><td>${nombre}</td></tr>
+      <tr><th>Documento de Identificación (DPI)</th><td>${dpi}</td></tr>
+    </table>
   </div>
-  <div class="sec"><div class="sec-label">Datos Evaluados</div><table>${datosRows}</table></div>
-  <div class="sec"><div class="sec-label">Regla Aplicada</div><div class="regla">${regla}</div></div>
-  ${condRows ? `<div class="sec"><div class="sec-label">Desglose de Condiciones</div><table>${condRows}</table></div>` : ''}
-  ${noAplRows ? `<div class="sec"><div class="sec-label">Condiciones No Cumplidas en Otras Reglas</div><table>${noAplRows}</table></div>` : ''}
+
+  <div class="sec">
+    <div class="sec-title">II. Resolución del Comité Automatizado</div>
+    <div class="res-box" style="border-color:${color}; background:${fondo}">
+      <div class="res-txt" style="color:${color}">${labelAccion[accion] || accion}</div>
+      <div class="res-sub">Evaluación emitida bajo los parámetros de riesgo vigentes.</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">III. Detalles de Evaluación Financiera</div>
+    <table>
+      ${datosRows}
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">IV. Fundamento de la Resolución</div>
+    <div class="regla">${regla}</div>
+  </div>
+
+  ${condRows ? `<div class="sec"><div class="sec-title">V. Desglose de Condiciones Verificadas</div><table>${condRows}</table></div>` : ''}
+  ${noAplRows ? `<div class="sec"><div class="sec-title">VI. Restricciones y Condiciones No Cumplidas</div><table>${noAplRows}</table></div>` : ''}
+
+  <div class="signatures">
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-name">Sistema Automatizado</div>
+      <div class="sig-title">Firma Electrónica Autorizada</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-name">Sello de Conformidad</div>
+      <div class="sig-title">Departamento de Auditoría</div>
+    </div>
+  </div>
+
   <div class="footer">
-    <div class="nota">Documento generado automáticamente. La decisión está basada en las reglas definidas por la institución.</div>
-    <div><div class="sello-linea"></div><div class="sello-txt">Firma del Sistema</div><div class="sello-txt" style="font-family:monospace;font-size:10px;color:#aaa">${folio}</div></div>
+    <strong>Aviso Legal:</strong> Este documento constituye un dictamen de evaluación de crédito emitido automáticamente por el sistema de reglas de negocio de la institución. Las condiciones aquí estipuladas son confidenciales y están dirigidas exclusivamente al solicitante. Cualquier alteración de este documento invalida su autenticidad. Para verificaciones adicionales, consulte con el Departamento de Riesgo usando el folio proporcionado.
   </div>
-</div></body></html>`;
+</div>
+</body></html>`;
 
   const ventana = window.open('', '_blank');
+  if (!ventana) {
+    alert('El bloqueador de ventanas emergentes impidió abrir el PDF. Por favor, permita las ventanas emergentes para este sitio.');
+    return;
+  }
   ventana.document.write(html);
   ventana.document.close();
   ventana.focus();
   setTimeout(() => ventana.print(), 500);
 }
 
-// ═══════════════════════════════════════════════════════
 //  INTERFAZ
-// ═══════════════════════════════════════════════════════
 
 function updateLineNumbers() {
   const lines = document.getElementById('editor').value.split('\n').length;
@@ -1633,19 +1679,6 @@ document.addEventListener('click', e => {
   if (e.target === overlay) cerrarModal();
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  updateLineNumbers();
-  const editor = document.getElementById('editor');
-  editor.addEventListener('input', () => {
-    updateLineNumbers();
-    if (editor.value.trim()) ocultarHint();
-  });
-  editor.addEventListener('scroll', syncScroll);
-  if (!localStorage.getItem('analizador_visto')) {
-    setTimeout(() => abrirModal(), 400);
-  }
-});
-
 // === CONTROL DE PESTAÑAS ===
 function initTabs() {
   const buttons = document.querySelectorAll('.tab-btn');
@@ -1662,9 +1695,16 @@ function initTabs() {
   });
 }
 
-// Llamar al cargar
 window.addEventListener('DOMContentLoaded', () => {
   updateLineNumbers();
-  initTabs();           // ← Agregar esta línea
-  // ... resto de tu código actual
+  initTabs();
+  const editor = document.getElementById('editor');
+  editor.addEventListener('input', () => {
+    updateLineNumbers();
+    if (editor.value.trim()) ocultarHint();
+  });
+  editor.addEventListener('scroll', syncScroll);
+  if (!localStorage.getItem('analizador_visto')) {
+    setTimeout(() => abrirModal(), 400);
+  }
 });

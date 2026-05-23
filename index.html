@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analizador – Reglas de Crédito</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
     /* ── Estilos para pestañas ── */
-    .tabs-container {
-      margin-top: 2rem;
-    }
-
+    .tabs-container { margin-top: 2rem; }
     .tabs {
       display: flex;
       background: var(--surface2);
@@ -21,7 +19,6 @@
       flex-wrap: wrap;
       gap: 6px;
     }
-
     .tab-btn {
       flex: 1;
       min-width: 140px;
@@ -35,24 +32,21 @@
       transition: all 0.2s ease;
       font-size: 0.92rem;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
-
     .tab-btn.active {
       background: var(--surface);
       color: var(--accent);
-      box-shadow: 0 4px 15px rgba(0, 229, 184, 0.2);
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
     }
-
-    .tab-content {
-      display: none;
-    }
-
+    .tab-content { display: none; }
     .tab-content.active {
       display: block;
       animation: fadeUp 0.4s ease;
     }
-
-    /* Ajustes adicionales */
     .main-grid { margin-bottom: 1rem; }
   </style>
 </head>
@@ -61,7 +55,7 @@
 <!-- MODAL DE ONBOARDING -->
 <div class="modal-overlay" id="modal-onboarding">
   <div class="modal">
-    <div class="modal-badge">👋 Bienvenido</div>
+    <div class="modal-badge"><span class="material-symbols-outlined" style="font-size:16px;">waving_hand</span> Bienvenido</div>
     <h2 class="modal-title">¿Cómo funciona este compilador?</h2>
     <p class="modal-desc">Compilador de lenguaje especializado para definir y evaluar reglas de crédito.</p>
     <div class="onboarding-steps">
@@ -87,7 +81,7 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="cargarEjemploDesdeModal()">✦ Cargar ejemplo expandido</button>
+      <button class="btn btn-primary" onclick="cargarEjemploDesdeModal()"><span class="material-symbols-outlined">star</span> Cargar ejemplo expandido</button>
       <button class="btn btn-ghost" onclick="cerrarModal()">Empezar desde cero</button>
     </div>
   </div>
@@ -99,165 +93,208 @@
     <h1>Lenguaje de <em>Reglas de Crédito</em></h1>
   </div>
 
-  <!-- EJEMPLOS RÁPIDOS -->
-  <div class="ejemplos-bar" id="ejemplos-bar">
-    <span class="ejemplos-label">Ejemplos:</span>
-    <button class="ej-btn" onclick="cargarEjemplo('basico')">✓ Básico</button>
-    <button class="ej-btn" onclick="cargarEjemplo('compuesto')">⊕ Compuesto</button>
-    <button class="ej-btn" onclick="cargarEjemplo('expandido')">★ Expandido</button>
-    <button class="ej-btn" onclick="cargarEjemplo('monto')">$ Monto/Tasa</button>
-    <button class="ej-btn" onclick="cargarEjemplo('fechas')">📅 Fechas</button>
-    <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_semantico')">⚠ Semántico</button>
-    <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_lexico')">⚠ Léxico</button>
-    <button class="ej-btn-help" onclick="toggleReferencia()" id="btn-ref">? Referencia</button>
+  <div class="top-nav">
+    <button class="nav-btn active" onclick="switchView('portal')" id="nav-portal">
+      <span class="material-symbols-outlined">person</span> Portal del Solicitante
+    </button>
+    <button class="nav-btn" onclick="switchView('panel')" id="nav-panel">
+      <span class="material-symbols-outlined">terminal</span> Panel Técnico
+    </button>
   </div>
 
-  <!-- PANEL DE REFERENCIA -->
-  <div class="referencia-panel" id="referencia-panel" style="display:none;">
-    <!-- ... (se mantiene igual) ... -->
-    <div class="ref-header">
-      <span class="ref-title">📖 Referencia rápida del lenguaje</span>
-      <button class="ref-close" onclick="toggleReferencia()">✕</button>
-    </div>
-    <div class="ref-body">
-      <!-- Mantén el contenido de referencia que ya tenías -->
-      <!-- (copia y pega tu contenido original aquí si lo quitaste) -->
-    </div>
-  </div>
-
-  <!-- EDITOR + HIGHLIGHT -->
-  <div class="main-grid">
-    <div class="panel">
+  <!-- VISTA: PORTAL DEL SOLICITANTE -->
+  <div id="view-portal" class="view-panel active">
+    <div class="panel" id="simulador-panel">
       <div class="panel-header">
-        <div class="dot" style="background:#ff5555"></div>
-        <div class="dot" style="background:#ffb86c"></div>
-        <div class="dot" style="background:#50fa7b"></div>
-        <span class="panel-title" style="margin-left:0.4rem">código fuente</span>
-        <div class="editor-hint" id="editor-hint">
-          <span class="hint-arrow">↓</span> empieza con <code>CAMPO decimal ingreso_mensual ;</code>
+        <span class="panel-title">Simulador de Solicitud de Crédito</span>
+      </div>
+      <div class="simulador-body">
+        <div class="sim-form-wrap">
+          <p class="sim-desc">Complete el siguiente formulario con los datos del solicitante.</p>
+          <div class="sim-form" id="sim-form">
+             <div class="empty-highlight" style="grid-column: 1 / -1; min-height:150px">
+                <span class="material-symbols-outlined empty-icon">assignment_late</span>
+                <span>Aún no hay reglas compiladas. Ve al Panel Técnico.</span>
+             </div>
+          </div>
+          <div class="sim-btn-row" id="sim-btn-row" style="display:none; align-items:center;">
+            <button class="btn btn-sim" onclick="evaluarSolicitud()">
+              <span class="material-symbols-outlined">play_arrow</span> Evaluar solicitud
+            </button>
+            <button class="btn btn-ghost" onclick="reiniciarSimulador()" style="margin-left:auto;">
+              <span class="material-symbols-outlined">refresh</span> Nueva Evaluación
+            </button>
+          </div>
+        </div>
+
+        <div id="sim-loader-wrap" class="sim-loader-wrap" style="display:none;">
+          <div class="spinner"></div>
+          <div class="sim-loader-text">Evaluando perfil crediticio...</div>
+        </div>
+
+        <div class="sim-resultado-wrap" id="sim-resultado-wrap" style="display:none;">
+          <div class="sim-resultado" id="sim-resultado"></div>
+          <div class="sim-detalle" id="sim-detalle"></div>
         </div>
       </div>
-      <div class="editor-wrap">
-        <div class="line-numbers" id="line-nums">1</div>
-        <textarea id="editor" placeholder="CAMPO decimal ingreso_mensual ;&#10;CAMPO entero score_crediticio ;&#10;&#10;SI score_crediticio >= 700 Y ingreso_mensual >= 5000.00 ENTONCES APROBAR ;"></textarea>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="analizar()">▶ Analizar</button>
-        <button class="btn btn-ghost" onclick="limpiar()">↺ Limpiar</button>
-        <button class="btn btn-ghost" onclick="abrirModal()" style="margin-left:auto;">? Ayuda</button>
-      </div>
-    </div>
 
-    <div class="stats-sidebar">
-      <!-- Tus chips de estadísticas se mantienen igual -->
-      <div class="stat-chip sc-kw"><span class="stat-chip-badge">KW</span><span class="stat-chip-count" id="sc-kw">0</span><span class="stat-chip-label">Reserv.</span></div>
-      <div class="stat-chip sc-td"><span class="stat-chip-badge">TD</span><span class="stat-chip-count" id="sc-td">0</span><span class="stat-chip-label">Tipos</span></div>
-      <div class="stat-chip sc-id"><span class="stat-chip-badge">ID</span><span class="stat-chip-count" id="sc-id">0</span><span class="stat-chip-label">Ident.</span></div>
-      <div class="stat-chip sc-op"><span class="stat-chip-badge">OP</span><span class="stat-chip-count" id="sc-op">0</span><span class="stat-chip-label">Oper.</span></div>
-      <div class="stat-chip sc-num"><span class="stat-chip-badge">NUM</span><span class="stat-chip-count" id="sc-num">0</span><span class="stat-chip-label">Núm.</span></div>
-      <div class="stat-chip sc-str"><span class="stat-chip-badge">STR</span><span class="stat-chip-count" id="sc-str">0</span><span class="stat-chip-label">Texto</span></div>
-      <div class="stat-chip sc-sym"><span class="stat-chip-badge">SYM</span><span class="stat-chip-count" id="sc-sym">0</span><span class="stat-chip-label">Símb.</span></div>
-      <div class="stat-chip sc-err"><span class="stat-chip-badge">ERR</span><span class="stat-chip-count" id="sc-err">0</span><span class="stat-chip-label">Err.</span></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">código resaltado</span>
-      </div>
-      <div class="editor-wrap">
-        <div class="line-numbers" id="hl-lines"></div>
-        <div class="highlight-wrap" id="highlight">
-          <div class="empty-highlight"><div class="empty-icon">✦</div><span>El código resaltado aparecerá aquí</span></div>
+      <div id="historial-wrap" style="display:none;">
+        <div class="panel-header" style="border-top: 1px solid var(--border);">
+          <span class="panel-title"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-right:4px;">assignment</span> Historial de evaluaciones</span>
+        </div>
+        <div class="table-wrap" style="min-height: auto; max-height: 400px;">
+          <table class="token-table" id="historial-tabla"></table>
         </div>
       </div>
-      <div class="status-bar"><span id="status-msg"></span></div>
     </div>
   </div>
 
-  <!-- PESTAÑAS -->
-  <div class="tabs-container">
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="lexico">📋 Fase 1 — Léxico</button>
-      <button class="tab-btn" data-tab="sintactico">🔍 Fase 2 — Sintáctico</button>
-      <button class="tab-btn" data-tab="semantico">🧠 Fase 3 — Semántico</button>
-      <button class="tab-btn" data-tab="simulador">▶ Simulador de Crédito</button>
+  <!-- VISTA: PANEL TECNICO -->
+  <div id="view-panel" class="view-panel">
+    <!-- EJEMPLOS RÁPIDOS -->
+    <div class="ejemplos-bar" id="ejemplos-bar">
+      <span class="ejemplos-label">Ejemplos:</span>
+      <button class="ej-btn" onclick="cargarEjemplo('basico')"><span class="material-symbols-outlined" style="font-size:14px">check</span> Básico</button>
+      <button class="ej-btn" onclick="cargarEjemplo('compuesto')"><span class="material-symbols-outlined" style="font-size:14px">add_circle</span> Compuesto</button>
+      <button class="ej-btn" onclick="cargarEjemplo('expandido')"><span class="material-symbols-outlined" style="font-size:14px">star</span> Expandido</button>
+      <button class="ej-btn" onclick="cargarEjemplo('monto')"><span class="material-symbols-outlined" style="font-size:14px">attach_money</span> Monto/Tasa</button>
+      <button class="ej-btn" onclick="cargarEjemplo('fechas')"><span class="material-symbols-outlined" style="font-size:14px">calendar_today</span> Fechas</button>
+      <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_semantico')"><span class="material-symbols-outlined" style="font-size:14px">warning</span> Semántico</button>
+      <button class="ej-btn ej-btn-err" onclick="cargarEjemplo('error_lexico')"><span class="material-symbols-outlined" style="font-size:14px">warning</span> Léxico</button>
+      <button class="ej-btn-help" onclick="toggleReferencia()" id="btn-ref"><span class="material-symbols-outlined" style="font-size:14px">help</span> Referencia</button>
     </div>
 
-    <!-- Contenido Léxico -->
-    <div id="panel-lexico" class="tab-content active">
-      <div class="panel">
-        <div class="panel-header"><span class="panel-title">Tabla de Tokens</span></div>
-        <div class="table-wrap" id="table-wrap" style="min-height:380px;">
-          <div class="empty"><div class="empty-icon">⌨</div><span>Escribe código y presiona Analizar</span></div>
-        </div>
+    <!-- PANEL DE REFERENCIA -->
+    <div class="referencia-panel" id="referencia-panel" style="display:none;">
+      <div class="ref-header">
+        <span class="ref-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px;">menu_book</span> Referencia rápida del lenguaje</span>
+        <button class="ref-close" onclick="toggleReferencia()"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
+      </div>
+      <div class="ref-body">
+         <div class="ref-col">
+            <h4>Palabras Reservadas</h4>
+            <div class="ref-tokens">
+              <span class="tk tk-kw">CAMPO</span> <span class="tk tk-kw">REGLA</span> <span class="tk tk-kw">PRIORIDAD</span> <span class="tk tk-kw">SI</span> <span class="tk tk-kw">ENTONCES</span>
+            </div>
+            <h4>Tipos de Datos</h4>
+            <div class="ref-tokens">
+              <span class="tk tk-td">entero</span> <span class="tk tk-td">decimal</span> <span class="tk tk-td">texto</span> <span class="tk tk-td">booleano</span> <span class="tk tk-td">fecha</span>
+            </div>
+         </div>
+         <div class="ref-col">
+            <h4>Operadores</h4>
+            <div class="ref-tokens">
+              <span class="tk tk-op">></span> <span class="tk tk-op"><</span> <span class="tk tk-op">>=</span> <span class="tk tk-op"><=</span> <span class="tk tk-op">=</span> <span class="tk tk-op">!=</span>
+              <span class="tk tk-op">ENTRE</span> <span class="tk tk-op">Y</span> <span class="tk tk-op">O</span> <span class="tk tk-op">NO</span>
+            </div>
+            <h4>Acciones</h4>
+            <div class="ref-tokens">
+              <span class="tk tk-id">APROBAR</span> <span class="tk tk-id">RECHAZAR</span> <span class="tk tk-id">CONDICIONAR</span>
+            </div>
+         </div>
       </div>
     </div>
 
-    <!-- Contenido Sintáctico -->
-    <div id="panel-sintactico" class="tab-content">
+    <!-- EDITOR + HIGHLIGHT -->
+    <div class="main-grid">
       <div class="panel">
-        <div class="panel-header"><span class="panel-title">Análisis Sintáctico</span></div>
-        <div style="padding: 1.2rem 1.4rem;">
-          <div id="sint-resultado">
-            <div class="empty" style="min-height:60px;"><span>El resultado del análisis sintáctico aparecerá aquí</span></div>
-          </div>
-        </div>
-        <div id="arbol-wrap" style="display:none;">
-          <div class="panel-header"><span class="panel-title">Árbol Sintáctico</span></div>
-          <div style="padding: 1.2rem 1.4rem; overflow-x: auto;">
-            <pre id="arbol-pre" class="arbol-pre"></pre>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contenido Semántico -->
-    <div id="panel-semantico" class="tab-content">
-      <div class="panel">
-        <div class="panel-header"><span class="panel-title">Análisis Semántico</span></div>
-        <div style="padding: 1.2rem 1.4rem;">
-          <div id="sem-resultado">
-            <div class="empty" style="min-height:60px;"><span>El resultado del análisis semántico aparecerá aquí</span></div>
-          </div>
-        </div>
-        <div id="tabla-simbolos-wrap" style="display:none;">
-          <div class="panel-header">
-            <span class="panel-title">Tabla de Símbolos</span>
-          </div>
-          <div class="table-wrap" style="min-height:auto; max-height:320px;">
-            <table class="token-table" id="tabla-simbolos"></table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contenido Simulador -->
-    <div id="panel-simulador" class="tab-content">
-      <div class="panel" id="simulador-panel">
         <div class="panel-header">
-          <span class="panel-title">Simulador de Solicitud de Crédito</span>
+          <div class="dot" style="background:#ef4444"></div>
+          <div class="dot" style="background:#f59e0b"></div>
+          <div class="dot" style="background:#10b981"></div>
+          <span class="panel-title" style="margin-left:0.4rem">código fuente</span>
+          <div class="editor-hint" id="editor-hint">
+            <span class="material-symbols-outlined hint-arrow" style="font-size:14px">arrow_downward</span> empieza con <code>CAMPO decimal ingreso ;</code>
+          </div>
         </div>
-        <div class="simulador-body">
-          <div class="sim-form-wrap">
-            <p class="sim-desc">Los campos se generan automáticamente desde las declaraciones <code>CAMPO</code>.</p>
-            <div class="sim-form" id="sim-form"></div>
-            <div class="sim-btn-row">
-              <button class="btn btn-sim" onclick="evaluarSolicitud()">▶ Evaluar solicitud</button>
+        <div class="editor-wrap">
+          <div class="line-numbers" id="line-nums">1</div>
+          <textarea id="editor" placeholder="CAMPO decimal ingreso_mensual ;&#10;CAMPO entero score_crediticio ;&#10;&#10;SI score_crediticio >= 700 Y ingreso_mensual >= 5000.00 ENTONCES APROBAR ;"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="analizar()"><span class="material-symbols-outlined" style="font-size:18px">play_arrow</span> Analizar</button>
+          <button class="btn btn-ghost" onclick="limpiar()"><span class="material-symbols-outlined" style="font-size:18px">refresh</span> Limpiar</button>
+          <button class="btn btn-ghost" onclick="abrirModal()" style="margin-left:auto;"><span class="material-symbols-outlined" style="font-size:18px">help</span> Ayuda</button>
+        </div>
+      </div>
+
+      <div class="stats-sidebar">
+        <div class="stat-chip sc-kw"><span class="stat-chip-badge">KW</span><span class="stat-chip-count" id="sc-kw">0</span><span class="stat-chip-label">Reserv.</span></div>
+        <div class="stat-chip sc-td"><span class="stat-chip-badge">TD</span><span class="stat-chip-count" id="sc-td">0</span><span class="stat-chip-label">Tipos</span></div>
+        <div class="stat-chip sc-id"><span class="stat-chip-badge">ID</span><span class="stat-chip-count" id="sc-id">0</span><span class="stat-chip-label">Ident.</span></div>
+        <div class="stat-chip sc-op"><span class="stat-chip-badge">OP</span><span class="stat-chip-count" id="sc-op">0</span><span class="stat-chip-label">Oper.</span></div>
+        <div class="stat-chip sc-num"><span class="stat-chip-badge">NUM</span><span class="stat-chip-count" id="sc-num">0</span><span class="stat-chip-label">Núm.</span></div>
+        <div class="stat-chip sc-str"><span class="stat-chip-badge">STR</span><span class="stat-chip-count" id="sc-str">0</span><span class="stat-chip-label">Texto</span></div>
+        <div class="stat-chip sc-sym"><span class="stat-chip-badge">SYM</span><span class="stat-chip-count" id="sc-sym">0</span><span class="stat-chip-label">Símb.</span></div>
+        <div class="stat-chip sc-err"><span class="stat-chip-badge">ERR</span><span class="stat-chip-count" id="sc-err">0</span><span class="stat-chip-label">Err.</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">código resaltado</span>
+        </div>
+        <div class="editor-wrap">
+          <div class="line-numbers" id="hl-lines"></div>
+          <div class="highlight-wrap" id="highlight">
+            <div class="empty-highlight"><span class="material-symbols-outlined empty-icon">star</span><span>El código resaltado aparecerá aquí</span></div>
+          </div>
+        </div>
+        <div class="status-bar"><span id="status-msg"></span></div>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS TÉCNICAS -->
+    <div class="tabs-container">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="lexico"><span class="material-symbols-outlined">assignment</span> Fase 1 — Léxico</button>
+        <button class="tab-btn" data-tab="sintactico"><span class="material-symbols-outlined">search</span> Fase 2 — Sintáctico</button>
+        <button class="tab-btn" data-tab="semantico"><span class="material-symbols-outlined">psychology</span> Fase 3 — Semántico</button>
+      </div>
+
+      <!-- Contenido Léxico -->
+      <div id="panel-lexico" class="tab-content active">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Tabla de Tokens</span></div>
+          <div class="table-wrap" id="table-wrap" style="min-height:380px;">
+            <div class="empty"><span class="material-symbols-outlined empty-icon">keyboard</span><span>Escribe código y presiona Analizar</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenido Sintáctico -->
+      <div id="panel-sintactico" class="tab-content">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Análisis Sintáctico</span></div>
+          <div style="padding: 1.2rem 1.4rem;">
+            <div id="sint-resultado">
+              <div class="empty" style="min-height:60px;"><span>El resultado del análisis sintáctico aparecerá aquí</span></div>
             </div>
           </div>
-
-          <div class="sim-resultado-wrap" id="sim-resultado-wrap" style="display:none;">
-            <div class="sim-resultado" id="sim-resultado"></div>
-            <div class="sim-detalle" id="sim-detalle"></div>
+          <div id="arbol-wrap" style="display:none;">
+            <div class="panel-header"><span class="panel-title">Árbol Sintáctico</span></div>
+            <div style="padding: 1.2rem 1.4rem; overflow-x: auto;">
+              <pre id="arbol-pre" class="arbol-pre"></pre>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div id="historial-wrap" style="display:none;">
-          <div class="panel-header" style="border-top: 1px solid var(--border);">
-            <span class="panel-title">📋 Historial de evaluaciones</span>
+      <!-- Contenido Semántico -->
+      <div id="panel-semantico" class="tab-content">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Análisis Semántico</span></div>
+          <div style="padding: 1.2rem 1.4rem;">
+            <div id="sem-resultado">
+              <div class="empty" style="min-height:60px;"><span>El resultado del análisis semántico aparecerá aquí</span></div>
+            </div>
           </div>
-          <div class="table-wrap">
-            <table class="token-table" id="historial-tabla"></table>
+          <div id="tabla-simbolos-wrap" style="display:none;">
+            <div class="panel-header">
+              <span class="panel-title">Tabla de Símbolos</span>
+            </div>
+            <div class="table-wrap" style="min-height:auto; max-height:320px;">
+              <table class="token-table" id="tabla-simbolos"></table>
+            </div>
           </div>
         </div>
       </div>
@@ -267,5 +304,13 @@
 </div>
 
 <script src="analizador.js"></script>
+<script>
+  function switchView(viewName) {
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + viewName).classList.add('active');
+    document.getElementById('nav-' + viewName).classList.add('active');
+  }
+</script>
 </body>
 </html>
